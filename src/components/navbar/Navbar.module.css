@@ -1,0 +1,69 @@
+/* Keep styles minimal to complement MUI */
+.appBar {
+  backdrop-filter: saturate(180%) blur(6px);
+  background: var(--nav-bg, linear-gradient(90deg, #6285d6 0%, #1d4ed8 50%, #0ea5e9 100%)) !important;
+  transition: box-shadow 200ms ease, background 200ms ease;
+  border-bottom: var(--nav-border, none);
+}
+
+.appBarScrolled {
+  backdrop-filter: saturate(180%) blur(12px);
+  background: var(--nav-bg-scrolled, linear-gradient(90deg, #90a6f0 0%, #1e40af 50%, #0284c7 100%)) !important;
+  border-bottom: var(--nav-border, none);
+}
+
+
+
+/* Light, elegant theme that pairs with most logos */
+.themeLight {
+  --nav-bg: linear-gradient(180deg, #ffffff 0%, #f6f9ff 100%);
+  --nav-bg-scrolled: linear-gradient(180deg, #f9fbff 0%, #eef4ff 100%);
+  --nav-border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+/* Logo emphasis */
+.logo {
+  height: 56px;
+  filter: drop-shadow(0 4px 12px rgba(15, 23, 42, 0.12));
+  transition: transform 180ms ease, filter 180ms ease;
+}
+
+.logo:hover {
+  transform: scale(1.03);
+  filter: drop-shadow(0 6px 18px rgba(15, 23, 42, 0.18));
+}
+
+.logoMobile {
+  height: 44px;
+  filter: drop-shadow(0 3px 10px rgba(15, 23, 42, 0.12));
+  transition: transform 180ms ease, filter 180ms ease;
+}
+
+.logoMobile:hover {
+  transform: scale(1.04);
+  filter: drop-shadow(0 5px 14px rgba(15, 23, 42, 0.18));
+}
+
+/* Inner rounded container to improve overall navbar shape */
+.navInner {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  backdrop-filter: blur(10px) saturate(160%);
+  box-shadow: 0 6px 24px rgba(239, 240, 241, 0);
+  border-radius: 14px;
+  padding: 6px 12px;
+}
+
+.navInnerScrolled {
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 10px 28px rgba(2, 6, 23, 0.08);
+}
+
+@media (max-width: 900px) {
+  .navInner {
+    border-radius: 12px;
+    padding: 6px 8px;
+  }
+}
+
