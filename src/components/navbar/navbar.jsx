@@ -18,14 +18,17 @@ import Divider from '@mui/material/Divider';
 import logo from '../../assets/imager/logo.png';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import styles from './Navbar.module.css';
+import TranslateIcon from '@mui/icons-material/Translate';
+import { useLanguage } from '../../i18n/LanguageContext.jsx';
 
 const pages = [
-  { label: 'Home', path: '/' },
-  { label: 'Products', path: '/products' },
+  { label: 'nav_home', path: '/' },
+  { label: 'nav_products', path: '/products' },
 ];
-const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
+const settings = ['nav_profile', 'nav_account', 'nav_dashboard', 'nav_logout'];
 
 function ResponsiveAppBar() {
+  const { lang, dir, t, setLang } = useLanguage();
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
   const [scrolled, setScrolled] = React.useState(false);
@@ -90,7 +93,7 @@ function ResponsiveAppBar() {
       color="transparent"
       elevation={scrolled ? 6 : 0}
       className={`${styles.themeLight} ${scrolled ? styles.appBarScrolled : styles.appBar}`}
-      sx={{ color: '#0f172a' }}
+      sx={{ color: '#0f172a', direction: dir }}
     >
       <Container maxWidth="xl" sx={{ py: 0.5 }}>
         <Toolbar disableGutters className={`${styles.navInner} ${scrolled ? styles.navInnerScrolled : ''}`}>
@@ -147,20 +150,20 @@ function ResponsiveAppBar() {
                   to={page.path}
                   onClick={handleCloseNavMenu}
                 >
-                  <Typography sx={{ textAlign: 'center' }}>{page.label}</Typography>
+                  <Typography sx={{ textAlign: dir === 'rtl' ? 'right' : 'left' }}>{t(page.label)}</Typography>
                 </MenuItem>
               ))}
               <Divider sx={{ my: 0.5 }} />
               {currentUser ? (
                 <>
                   <MenuItem onClick={handleCloseNavMenu} component={Link} to="/profile">
-                    <Typography sx={{ textAlign: 'center' }}>Profile</Typography>
+                    <Typography sx={{ textAlign: dir === 'rtl' ? 'right' : 'left' }}>{t('nav_profile')}</Typography>
                   </MenuItem>
                   <MenuItem onClick={handleCloseNavMenu} component={Link} to="/account">
-                    <Typography sx={{ textAlign: 'center' }}>Account</Typography>
+                    <Typography sx={{ textAlign: dir === 'rtl' ? 'right' : 'left' }}>{t('nav_account')}</Typography>
                   </MenuItem>
                   <MenuItem onClick={() => { handleCloseNavMenu(); handleLogout(); }}>
-                    <Typography sx={{ textAlign: 'center' }}>Logout</Typography>
+                    <Typography sx={{ textAlign: dir === 'rtl' ? 'right' : 'left' }}>{t('nav_logout')}</Typography>
                   </MenuItem>
                 </>
               ) : (
@@ -168,12 +171,12 @@ function ResponsiveAppBar() {
                   <MenuItem component={Link} to="/login" onClick={handleCloseNavMenu}
                     sx={{ my: 0.25, borderRadius: 2, backgroundColor: 'rgba(15,23,42,0.04)' }}
                   >
-                    <Typography sx={{ textAlign: 'center' }}>Login</Typography>
+                    <Typography sx={{ textAlign: dir === 'rtl' ? 'right' : 'left' }}>{t('nav_login')}</Typography>
                   </MenuItem>
                   <MenuItem component={Link} to="/register" onClick={handleCloseNavMenu}
                     sx={{ my: 0.25, borderRadius: 2, backgroundImage: 'linear-gradient(90deg, #6366f1 0%, #22d3ee 100%)', color: '#fff' }}
                   >
-                    <Typography sx={{ textAlign: 'center', color: '#fff' }}>Register</Typography>
+                    <Typography sx={{ textAlign: dir === 'rtl' ? 'right' : 'left', color: '#fff' }}>{t('nav_register')}</Typography>
                   </MenuItem>
                 </>
               )}
@@ -216,7 +219,7 @@ function ResponsiveAppBar() {
                     '&:hover': { backgroundColor: 'rgba(15,23,42,0.08)' },
                   }}
                 >
-                  {page.label}
+                  {t(page.label === 'الرئيسية' || page.label === 'Home' ? 'nav_home' : 'nav_products')}
                 </Button>
               );
             })}
@@ -236,13 +239,22 @@ function ResponsiveAppBar() {
             >
               <ShoppingCartIcon />
             </IconButton>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}
+              startIcon={<TranslateIcon />}
+              sx={{ textTransform: 'none', borderRadius: 999 }}
+            >
+              {t('lang_toggle')}
+            </Button>
             {currentUser ? (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Typography sx={{ display: { xs: 'none', md: 'block' }, mr: 0.5 }}>
                   {currentUser?.name || 'User'}
                 </Typography>
                 <Box sx={{ flexGrow: 0 }}>
-                  <Tooltip title="Account">
+                  <Tooltip title="الحساب">
                     <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                       <Avatar alt={currentUser?.name || 'User'} src={currentUser?.avatarUrl || ''} />
                     </IconButton>
@@ -258,13 +270,13 @@ function ResponsiveAppBar() {
                     onClose={handleCloseUserMenu}
                   >
                     <MenuItem onClick={() => { handleCloseUserMenu(); navigate('/profile'); }}>
-                      <Typography sx={{ textAlign: 'center' }}>Profile</Typography>
+                      <Typography sx={{ textAlign: dir === 'rtl' ? 'right' : 'left' }}>{t('nav_profile')}</Typography>
                     </MenuItem>
                     <MenuItem onClick={() => { handleCloseUserMenu(); navigate('/account'); }}>
-                      <Typography sx={{ textAlign: 'center' }}>Account</Typography>
+                      <Typography sx={{ textAlign: dir === 'rtl' ? 'right' : 'left' }}>{t('nav_account')}</Typography>
                     </MenuItem>
                     <MenuItem onClick={handleLogout}>
-                      <Typography sx={{ textAlign: 'center' }}>Logout</Typography>
+                      <Typography sx={{ textAlign: dir === 'rtl' ? 'right' : 'left' }}>{t('nav_logout')}</Typography>
                     </MenuItem>
                   </Menu>
                 </Box>
@@ -286,7 +298,7 @@ function ResponsiveAppBar() {
                     '&:hover': { borderColor: 'rgba(15,23,42,0.25)', backgroundColor: 'rgba(15,23,42,0.08)' }
                   }}
                 >
-                  Login
+                  {t('nav_login')}
                 </Button>
                 <Button
                   component={Link}
@@ -303,7 +315,7 @@ function ResponsiveAppBar() {
                     '&:hover': { backgroundImage: 'linear-gradient(90deg, #4f46e5 0%, #06b6d4 100%)', boxShadow: '0 10px 26px rgba(99, 102, 241, 0.45)' }
                   }}
                 >
-                  Register
+                  {t('nav_register')}
                 </Button>
               </Box>
             )}

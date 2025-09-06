@@ -10,27 +10,32 @@ import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import axios from 'axios';
+import { useLanguage } from '../../i18n/LanguageContext.jsx';
 
 
 export default function ProductList({ title = 'منتجات مختارة', layout = 'grid', viewAllHref, query = '', minPrice, maxPrice, minRate, sort, hasDiscountOnly = false }) {
+  const { t } = useLanguage();
   const [favoriteIds, setFavoriteIds] = React.useState(new Set());
   const [addedIds, setAddedIds] = React.useState(new Set());
  
   
 
-  const addToCart = async(id) => {
-   
-    const token=localStorage.getItem('auth_token')
-   
-     const response = await axios.post('https://kashop1.runasp.net/api/Customer/Carts', {productId: id },
-      {
-        headers:{
-          Authorization:`Bearer ${token}`
-        }
-      }
-     );
-     
+  const addToCart = async (id) => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      const res = await axios.post(
+        'https://kashop1.runasp.net/api/Customer/Carts',
+        { productId: id, quantity: 1 },
+        { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+      );
+      setAddedIds((prev) => new Set(prev).add(id));
+      console.log('Added to cart:', res.data);
+    } catch (error) {
+      console.error('Error adding to cart:', error?.response?.data || error?.message);
+      alert(`حدث خطأ أثناء إضافة المنتج للسلة ${id}`);
+    }
   };
+  
  
 
   const [products, setProducts] = React.useState([]);
@@ -212,7 +217,7 @@ export default function ProductList({ title = 'منتجات مختارة', layou
                   className="actionsBar"
                 >
                   <Button onClick={() => addToCart(p.id)} fullWidth startIcon={<AddShoppingCartIcon />} sx={{ textTransform: 'none', background: addedIds.has(p.id) ? 'linear-gradient(90deg, #22c55e, #10b981)' : 'rgba(15,23,42,0.08)', color: addedIds.has(p.id) ? '#fff' : '#0f172a', '&:hover': { background: addedIds.has(p.id) ? 'linear-gradient(90deg, #16a34a, #0ea5a3)' : 'rgba(15,23,42,0.14)' } }}>
-                    {addedIds.has(p.id) ? 'تمت الإضافة' : 'أضف إلى السلة'}
+                    {addedIds.has(p.id) ? t('added_to_cart') : t('add_to_cart')}
                   </Button>
                 </Box>
                 <Box sx={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />

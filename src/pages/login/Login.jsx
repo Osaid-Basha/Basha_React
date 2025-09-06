@@ -14,8 +14,10 @@ import loginImg from '../../assets/imager/login.png'
 import { useForm } from 'react-hook-form'
 import axios from 'axios'
 import { toast } from 'react-toastify'
+import { useLanguage } from '../../i18n/LanguageContext.jsx'
 
 export default function Login() {
+  const { t, dir } = useLanguage()
   const navigate = useNavigate();
   const { register , handleSubmit, formState: { errors } } = useForm({ mode: 'onTouched' });
   const [isLoading, setIsLoading] = React.useState(false);
@@ -28,12 +30,12 @@ export default function Login() {
       const res = await toast.promise(
         axios.post("http://mytest1.runasp.net/api/Identity/Account/Login", data),
         {
-          pending: 'Processing... ',
-          success: 'Logged in successfully',
+          pending: t('login_pending'),
+          success: t('login_success'),
           error: {
             render({ data }) {
               const err = data;
-              return err?.response?.data?.message || 'Login failed';
+              return err?.response?.data?.message || t('login_failed');
             }
           }
         }
@@ -53,7 +55,7 @@ export default function Login() {
   };
 
   return (
-    <Box sx={{ maxWidth: '1400px', mx: 'auto', px: { xs: 2, md: 3 }, py: { xs: 3, md: 6 } }}>
+    <Box sx={{ maxWidth: '1400px', mx: 'auto', px: { xs: 2, md: 3 }, py: { xs: 3, md: 6 }, direction: dir }}>
       <Paper elevation={0} sx={{
         p: { xs: 3, md: 4 },
         borderRadius: 3,
@@ -64,39 +66,54 @@ export default function Login() {
       }}>
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '0.95fr 1.05fr' }, gap: { xs: 3, md: 5 }, alignItems: 'center' }}>
           <Box>
-            <Typography variant="h4" sx={{ fontWeight: 900, mb: 0.75 }}>
-              <span className="text-gradient">Login</span>
+            <Typography variant="h4" sx={{ fontWeight: 900, mb: 0.75, textAlign: dir === 'rtl' ? 'right' : 'left' }}>
+              <span className="text-gradient">{t('login_title')}</span>
             </Typography>
-            <Typography sx={{ color: 'rgba(15,23,42,0.72)', mb: 3 }}>Access your account to continue</Typography>
+            <Typography sx={{ color: 'rgba(15,23,42,0.72)', mb: 3, textAlign: dir === 'rtl' ? 'right' : 'left' }}>{t('login_sub')}</Typography>
             <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ display: 'grid', gap: 1.75 }}>
               <TextField
                 {...register('email', {
-                  required: 'Email is required',
-                  pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Invalid email' },
+                  required: t('email_label') + ' ' + (dir === 'rtl' ? 'مطلوب' : 'required'),
+                  pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: t('email_label') + ' ' + (dir === 'rtl' ? 'غير صالح' : 'invalid') },
                 })}
                 error={!!errors.email}
                 helperText={errors.email?.message}
-                label="Email"
+                label={t('email_label')}
                 type="email"
                 size="medium"
                 fullWidth
-                placeholder="Enter your email"
+                placeholder={t('email_placeholder')}
                 InputProps={{ startAdornment: (<InputAdornment position="start"><EmailIcon fontSize="small" /></InputAdornment>) }}
+                sx={{ 
+                  direction: dir,
+                  '& .MuiInputBase-input': {
+                    textAlign: dir === 'rtl' ? 'right' : 'left'
+                  }
+                }}
               />
               <TextField
-                {...register('password', { required: 'Password is required', minLength: { value: 6, message: 'At least 6 characters' } })}
+                {...register('password', { 
+                  required: t('password_label') + ' ' + (dir === 'rtl' ? 'مطلوبة' : 'required'), 
+                  minLength: { value: 6, message: dir === 'rtl' ? 'على الأقل 6 أحرف' : 'At least 6 characters' } 
+                })}
                 error={!!errors.password}
                 helperText={errors.password?.message}
-                label="Password"
+                label={t('password_label')}
                 type="password"
                 size="medium"
                 fullWidth
-                placeholder="Enter your password"
+                placeholder={t('password_placeholder')}
                 InputProps={{ startAdornment: (<InputAdornment position="start"><LockIcon fontSize="small" /></InputAdornment>) }}
+                sx={{ 
+                  direction: dir,
+                  '& .MuiInputBase-input': {
+                    textAlign: dir === 'rtl' ? 'right' : 'left'
+                  }
+                }}
               />
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <FormControlLabel control={<Checkbox size="small" />} label="Remember me" />
-                <Link to="/forgotPassword" style={{ textDecoration: 'none', color: '#4f46e5' }}>Forgot Password?</Link>
+                <FormControlLabel control={<Checkbox size="small" />} label={t('remember_me')} />
+                <Link to="/forgot-password" style={{ textDecoration: 'none', color: '#4f46e5' }}>{t('forgot_password')}</Link>
               </Box>
               <Button type="submit" variant="contained" disabled={isLoading} sx={{
                 textTransform: 'none',
@@ -105,8 +122,8 @@ export default function Login() {
                 backgroundImage: 'linear-gradient(90deg, #6366f1 0%, #22d3ee 100%)',
                 boxShadow: '0 8px 22px rgba(99, 102, 241, 0.35)',
                 '&:hover': { backgroundImage: 'linear-gradient(90deg, #4f46e5 0%, #06b6d4 100%)', boxShadow: '0 10px 26px rgba(99, 102, 241, 0.45)' }
-              }}>{isLoading ? 'Processing...' : 'Log in'}</Button>
-              <Typography sx={{ fontSize: '0.95rem', color: 'rgba(15,23,42,0.75)' }}>Don't have an account? <Link to="/register" style={{ color: '#4f46e5', textDecoration: 'none' }}>Register</Link></Typography>
+              }}>{isLoading ? t('login_pending') : t('login_btn')}</Button>
+              <Typography sx={{ fontSize: '0.95rem', color: 'rgba(15,23,42,0.75)', textAlign: dir === 'rtl' ? 'right' : 'left' }}>{t('dont_have_account')} <Link to="/register" style={{ color: '#4f46e5', textDecoration: 'none' }}>{t('register_link')}</Link></Typography>
             </Box>
           </Box>
           <Box sx={{ display: { xs: 'none', md: 'flex' }, justifyContent: 'center' }}>

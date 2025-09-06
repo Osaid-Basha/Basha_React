@@ -19,9 +19,11 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 
 import ProductList from '../../components/product/ProductList';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 export default function Product() {
   const { id } = useParams();
+  const { t, dir } = useLanguage();
   const [product, setProduct] = React.useState(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [activeImage, setActiveImage] = React.useState('');
@@ -58,16 +60,16 @@ export default function Product() {
 
   if (isLoading) {
     return (
-      <Box sx={{ width: 'min(1400px, 96%)', mx: 'auto', mt: { xs: 3, md: 4 } }}>
-        <Typography>جارِ التحميل...</Typography>
+      <Box sx={{ width: 'min(1400px, 96%)', mx: 'auto', mt: { xs: 3, md: 4 }, direction: dir }}>
+        <Typography>{t('product_loading')}</Typography>
       </Box>
     );
   }
 
   if (!product) {
     return (
-      <Box sx={{ width: 'min(1400px, 96%)', mx: 'auto', mt: { xs: 3, md: 4 } }}>
-        <Typography>المنتج غير متاح</Typography>
+      <Box sx={{ width: 'min(1400px, 96%)', mx: 'auto', mt: { xs: 3, md: 4 }, direction: dir }}>
+        <Typography>{t('product_not_available')}</Typography>
       </Box>
     );
   }
@@ -108,7 +110,7 @@ export default function Product() {
     setIsInCart(true);
     
     // Show success message
-    alert(`تم إضافة ${quantity} قطعة إلى السلة!`);
+    alert(`${t('added')} ${quantity} ${t('pieces')} ${t('add_to_cart')}!`);
   };
 
   const handleToggleFavorite = () => {
@@ -117,7 +119,7 @@ export default function Product() {
   };
 
   return (
-    <Box sx={{ width: 'min(1400px, 96%)', mx: 'auto', mt: { xs: 3, md: 4 }, direction: 'rtl' }}>
+    <Box sx={{ width: 'min(1400px, 96%)', mx: 'auto', mt: { xs: 3, md: 4 }, direction: dir }}>
       {/* Main Header */}
       <Box sx={{ textAlign: 'center', mb: 4, p: 3, background: 'linear-gradient(135deg, rgba(99,102,241,0.1) 0%, rgba(34,197,94,0.1) 50%, rgba(245,158,11,0.1) 100%)', borderRadius: 3, border: '1px solid rgba(99,102,241,0.2)', position: 'relative', overflow: 'hidden' }}>
         <Box sx={{ position: 'absolute', top: -50, right: -50, width: 100, height: 100, borderRadius: '50%', background: 'rgba(99,102,241,0.1)', zIndex: 0 }} />
@@ -134,7 +136,7 @@ export default function Product() {
             mb: 1,
             textShadow: '0 2px 4px rgba(0,0,0,0.1)'
           }}>
-            تفاصيل المنتج
+            {t('product_details')}
           </Typography>
           <Typography sx={{ 
             fontSize: { xs: 14, md: 16 }, 
@@ -144,7 +146,7 @@ export default function Product() {
             mx: 'auto',
             lineHeight: 1.6
           }}>
-            اكتشف كل التفاصيل والمميزات الخاصة بهذا المنتج المميز
+            {t('product_details_subtitle')}
           </Typography>
         </Box>
       </Box>
@@ -157,7 +159,7 @@ export default function Product() {
             <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
               {product.categoryName && <Chip label={product.categoryName} size="small" sx={{ background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.25)', color: '#4f46e5', fontWeight: 700 }} />}
               {product.brandName && <Chip label={product.brandName} size="small" sx={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)', color: '#16a34a', fontWeight: 700 }} />}
-              {hasDiscount && <Chip label={`خصم ${Number(product.discount)}%`} size="small" sx={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)', color: '#ef4444', fontWeight: 800 }} />}
+              {hasDiscount && <Chip label={`${t('discount')} ${Number(product.discount)}%`} size="small" sx={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)', color: '#ef4444', fontWeight: 800 }} />}
             </Box>
           </Box>
           <IconButton onClick={async () => {
@@ -166,7 +168,7 @@ export default function Product() {
                 await navigator.share({ title: product.name, url: window.location.href });
               } else if (navigator.clipboard) {
                 await navigator.clipboard.writeText(window.location.href);
-                alert('تم نسخ الرابط');
+                alert(t('copy_link'));
               }
             } catch {}
           }}>
@@ -179,24 +181,24 @@ export default function Product() {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1, background: 'rgba(255,255,255,0.6)', borderRadius: 1.5, border: '1px solid rgba(99,102,241,0.1)' }}>
             <LocalShippingIcon sx={{ color: '#4f46e5', fontSize: 20 }} />
             <Box>
-              <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#4f46e5' }}>توصيل سريع</Typography>
-              <Typography sx={{ fontSize: 11, color: 'rgba(15,23,42,0.7)' }}>خلال 24-48 ساعة</Typography>
+              <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#4f46e5' }}>{t('fast_delivery')}</Typography>
+              <Typography sx={{ fontSize: 11, color: 'rgba(15,23,42,0.7)' }}>{t('fast_delivery_time')}</Typography>
             </Box>
           </Box>
           
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1, background: 'rgba(255,255,255,0.6)', borderRadius: 1.5, border: '1px solid rgba(34,197,94,0.1)' }}>
             <ReplayIcon sx={{ color: '#16a34a', fontSize: 20 }} />
             <Box>
-              <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#16a34a' }}>استرجاع مجاني</Typography>
-              <Typography sx={{ fontSize: 11, color: 'rgba(15,23,42,0.7)' }}>خلال 14 يوم</Typography>
+              <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#16a34a' }}>{t('free_returns')}</Typography>
+              <Typography sx={{ fontSize: 11, color: 'rgba(15,23,42,0.7)' }}>{t('free_returns_time')}</Typography>
             </Box>
           </Box>
           
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1, background: 'rgba(255,255,255,0.6)', borderRadius: 1.5, border: '1px solid rgba(245,158,11,0.1)' }}>
             <StarIcon sx={{ color: '#f59e0b', fontSize: 20 }} />
             <Box>
-              <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#f59e0b' }}>تقييم المنتج</Typography>
-              <Typography sx={{ fontSize: 11, color: 'rgba(15,23,42,0.7)' }}>{product.rate}/5 نجوم</Typography>
+              <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#f59e0b' }}>{t('product_rating')}</Typography>
+              <Typography sx={{ fontSize: 11, color: 'rgba(15,23,42,0.7)' }}>{product.rate}/5 {t('stars')}</Typography>
             </Box>
           </Box>
           
@@ -205,8 +207,8 @@ export default function Product() {
               <Typography sx={{ fontSize: 10, color: '#fff', fontWeight: 700 }}>✓</Typography>
             </Box>
             <Box>
-              <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#4f46e5' }}>متوفر الآن</Typography>
-              <Typography sx={{ fontSize: 11, color: 'rgba(15,23,42,0.7)' }}>{product.quantity} قطعة</Typography>
+              <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#4f46e5' }}>{t('available_now')}</Typography>
+              <Typography sx={{ fontSize: 11, color: 'rgba(15,23,42,0.7)' }}>{product.quantity} {t('pieces')}</Typography>
             </Box>
           </Box>
         </Box>
@@ -252,22 +254,23 @@ export default function Product() {
           )}
 
           <Box sx={{ mt: 2, p: 2, background: 'linear-gradient(135deg, rgba(99,102,241,0.05) 0%, rgba(34,197,94,0.05) 100%)', borderRadius: 2, border: '1px solid rgba(99,102,241,0.1)' }}>
-            <Typography sx={{ fontSize: 18, fontWeight: 800, color: '#4f46e5', mb: 1, textAlign: 'right' }}>
-              لماذا تختار هذا المنتج؟
+            <Typography sx={{ fontSize: 18, fontWeight: 800, color: '#4f46e5', mb: 1, textAlign: dir === 'rtl' ? 'right' : 'left' }}>
+              {t('why_choose_product')}
             </Typography>
-            <Typography sx={{ fontSize: 14, color: 'rgba(15,23,42,0.8)', lineHeight: 1.7, textAlign: 'right' }}>
-              منتج عالي الجودة من {product.brandName || 'ماركة موثوقة'} في قسم {product.categoryName || 'المتجر'}. 
-              يتميز بتصميم عصري وجودة ممتازة مع ضمان الرضا التام. 
-              {hasDiscount && ` احصل عليه الآن بخصم ${Number(product.discount)}% ووفر المال!`}
+            <Typography sx={{ fontSize: 14, color: 'rgba(15,23,42,0.8)', lineHeight: 1.7, textAlign: dir === 'rtl' ? 'right' : 'left' }}>
+              {dir === 'rtl' 
+                ? `منتج عالي الجودة من ${product.brandName || 'ماركة موثوقة'} في قسم ${product.categoryName || 'المتجر'}. يتميز بتصميم عصري وجودة ممتازة مع ضمان الرضا التام.${hasDiscount ? ` احصل عليه الآن بخصم ${Number(product.discount)}% ووفر المال!` : ''}`
+                : `High quality product from ${product.brandName || 'trusted brand'} in ${product.categoryName || 'store'} category. Features modern design and excellent quality with complete satisfaction guarantee.${hasDiscount ? ` Get it now with ${Number(product.discount)}% discount and save money!` : ''}`
+              }
             </Typography>
           </Box>
 
           {/* Quantity Controls */}
           <Box sx={{ mt: 2, mb: 2 }}>
-            <Typography sx={{ fontSize: 14, fontWeight: 700, color: 'rgba(15,23,42,0.8)', mb: 1, textAlign: 'right' }}>
-              الكمية:
+            <Typography sx={{ fontSize: 14, fontWeight: 700, color: 'rgba(15,23,42,0.8)', mb: 1, textAlign: dir === 'rtl' ? 'right' : 'left' }}>
+              {t('quantity')}
             </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: 'flex-end' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: dir === 'rtl' ? 'flex-end' : 'flex-start' }}>
               <IconButton 
                 onClick={() => handleQuantityChange(quantity - 1)}
                 disabled={quantity <= 1}
@@ -314,8 +317,8 @@ export default function Product() {
                 <AddIcon sx={{ fontSize: 18, color: '#4f46e5' }} />
               </IconButton>
             </Box>
-            <Typography sx={{ fontSize: 12, color: 'rgba(15,23,42,0.6)', mt: 0.5, textAlign: 'right' }}>
-              متوفر: {product?.quantity || 0} قطعة
+            <Typography sx={{ fontSize: 12, color: 'rgba(15,23,42,0.6)', mt: 0.5, textAlign: dir === 'rtl' ? 'right' : 'left' }}>
+              {t('available')}: {product?.quantity || 0} {t('pieces')}
             </Typography>
           </Box>
 
@@ -328,14 +331,14 @@ export default function Product() {
             mb: 2
           }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-              <Typography sx={{ fontSize: 14, color: 'rgba(15,23,42,0.7)' }}>السعر الإجمالي:</Typography>
+              <Typography sx={{ fontSize: 14, color: 'rgba(15,23,42,0.7)' }}>{t('total_price')}</Typography>
               <Typography sx={{ fontSize: 18, fontWeight: 900, color: hasDiscount ? '#16a34a' : '#111827' }}>
                 {totalPrice.toFixed(2)}$
               </Typography>
             </Box>
             {hasDiscount && (
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography sx={{ fontSize: 12, color: 'rgba(15,23,42,0.6)' }}>وفرت:</Typography>
+                <Typography sx={{ fontSize: 12, color: 'rgba(15,23,42,0.6)' }}>{t('you_saved')}</Typography>
                 <Typography sx={{ fontSize: 14, fontWeight: 700, color: '#ef4444' }}>
                   {((Number(product.price) * quantity) - totalPrice).toFixed(2)}$
                 </Typography>
@@ -344,7 +347,7 @@ export default function Product() {
           </Box>
 
           {/* Action Buttons */}
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'flex-start' }}>
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: dir === 'rtl' ? 'flex-start' : 'flex-end' }}>
             <Button 
               variant="contained" 
               startIcon={<ShoppingCartIcon />}
@@ -362,7 +365,7 @@ export default function Product() {
                 boxShadow: '0 4px 12px rgba(99,102,241,0.3)'
               }}
             >
-              {isInCart ? 'تم الإضافة' : 'أضف إلى السلة'}
+              {isInCart ? t('added_to_cart') : t('add_to_cart')}
             </Button>
             
             <Button 
@@ -381,7 +384,7 @@ export default function Product() {
                 }
               }}
             >
-              اشتري الآن
+              {t('buy_now')}
             </Button>
             
             <IconButton 
@@ -406,7 +409,7 @@ export default function Product() {
         </Box>
       </Box>
       <Box sx={{ mt: { xs: 3, md: 4 } }}>
-        <ProductList title="منتجات مشابهة" layout="carousel" query={(product.brandName || product.categoryName || '')} />
+        <ProductList title={t('similar_products')} layout="carousel" query={(product.brandName || product.categoryName || '')} />
       </Box>
 
       {/* Sticky Mobile Buy Bar */}
@@ -422,8 +425,8 @@ export default function Product() {
         backdropFilter: 'blur(6px)',
         boxShadow: '0 -4px 12px rgba(0,0,0,0.1)'
       }}>
-        <Box sx={{ textAlign: 'right' }}>
-          <Typography sx={{ fontSize: 12, color: 'rgba(15,23,42,0.6)' }}>السعر الإجمالي</Typography>
+        <Box sx={{ textAlign: dir === 'rtl' ? 'right' : 'left' }}>
+          <Typography sx={{ fontSize: 12, color: 'rgba(15,23,42,0.6)' }}>{t('total_price_mobile')}</Typography>
           <Typography sx={{ fontWeight: 900, color: hasDiscount ? '#16a34a' : '#111827', fontSize: 18 }}>
             {totalPrice.toFixed(2)}$
           </Typography>
@@ -460,7 +463,7 @@ export default function Product() {
               px: 2
             }}
           >
-            {isInCart ? 'تم' : 'أضف'}
+            {isInCart ? t('added') : t('add')}
           </Button>
         </Box>
       </Box>

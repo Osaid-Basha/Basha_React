@@ -36,3 +36,122 @@ a:hover { text-decoration: underline; }
   color: transparent;
 }
 
+/* RTL Support */
+[dir="rtl"] {
+  text-align: right;
+}
+
+[dir="rtl"] .text-gradient {
+  background: linear-gradient(270deg, #6366f1 0%, #22d3ee 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+[dir="ltr"] {
+  text-align: left;
+}
+
+/* RTL-specific adjustments */
+[dir="rtl"] .MuiTextField-root .MuiInputBase-input {
+  text-align: right;
+}
+
+[dir="rtl"] .MuiTextField-root .MuiInputLabel-root {
+  right: 0;
+  left: auto;
+  transform-origin: top right;
+}
+
+[dir="rtl"] .MuiTextField-root .MuiInputLabel-shrink {
+  transform: translate(30px, -9px) scale(0.75);
+}
+
+[dir="rtl"] .MuiTextField-root .MuiInputAdornment-root {
+  position: absolute;
+  right: 0;
+  left: auto;
+}
+
+[dir="rtl"] .MuiTextField-root .MuiInputAdornment-positionStart {
+  right: 0;
+  left: auto;
+}
+
+[dir="rtl"] .MuiTextField-root .MuiInputAdornment-positionEnd {
+  left: 0;
+  right: auto;
+}
+
+/* RTL Menu positioning */
+[dir="rtl"] .MuiMenu-root .MuiPaper-root {
+  right: 0;
+  left: auto;
+}
+
+/* RTL Button positioning */
+[dir="rtl"] .MuiButton-root {
+  text-align: right;
+}
+
+/* RTL Card content */
+[dir="rtl"] .MuiCardContent-root {
+  text-align: right;
+}
+
+/* RTL Typography */
+[dir="rtl"] .MuiTypography-root {
+  text-align: right;
+}
+
+/* RTL Grid adjustments */
+[dir="rtl"] .MuiGrid-container {
+  direction: rtl;
+}
+
+/* RTL Form controls */
+[dir="rtl"] .MuiFormControl-root {
+  text-align: right;
+}
+
+/* RTL Dialog */
+[dir="rtl"] .MuiDialog-paper {
+  text-align: right;
+}
+
+/* RTL Toast positioning */
+[dir="rtl"] .Toastify__toast-container {
+  right: 0;
+  left: auto;
+}
+
+/* RTL Navigation */
+[dir="rtl"] .MuiAppBar-root {
+  direction: rtl;
+}
+
+[dir="rtl"] .MuiToolbar-root {
+  direction: rtl;
+}
+
+/* RTL List items */
+[dir="rtl"] .MuiListItem-root {
+  text-align: right;
+}
+
+/* RTL Icon positioning */
+[dir="rtl"] .MuiIconButton-root {
+  margin-right: 0;
+  margin-left: 8px;
+}
+
+/* RTL Spacing adjustments */
+[dir="rtl"] .MuiBox-root {
+  direction: rtl;
+}
+
+/* RTL Container */
+[dir="rtl"] .MuiContainer-root {
+  direction: rtl;
+}
+

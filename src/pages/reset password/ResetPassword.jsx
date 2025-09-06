@@ -7,60 +7,53 @@ import Button from '@mui/material/Button'
 import InputAdornment from '@mui/material/InputAdornment'
 import EmailIcon from '@mui/icons-material/Email'
 import LockIcon from '@mui/icons-material/Lock'
+import VpnKeyIcon from '@mui/icons-material/VpnKey'
 import { useForm } from 'react-hook-form'
 import { toast } from 'react-toastify'
 import loginImg from '../../assets/imager/login.png'
 import axios from 'axios'
+import { useLanguage } from '../../i18n/LanguageContext.jsx'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 
 export default function ResetPassword() {
-  const { register, handleSubmit, formState: { errors } } = useForm({ mode: 'onTouched' })
-  const [isVerifying, setIsVerifying] = React.useState(false)
-  const [verified, setVerified] = React.useState(false)
+  const { t, dir } = useLanguage()
+  const { register, handleSubmit, formState: { errors }, watch } = useForm({ mode: 'onTouched' })
   const [isLoading, setIsLoading] = React.useState(false)
 
-  const onVerify = async ({ email, code }) => {
-    setIsVerifying(true)
-    try {
-      await toast.promise(
-        axios.post('http://mytest1.runasp.net/api/Identity/Account/verify-reset-code', { email, code }),
-        {
-          pending: 'Verifying code... ',
-          success: 'Code verified, set a new password',
-          error: {
-            render({ data }) {
-              const err = data
-              return err?.response?.data?.message || 'Invalid code'
-            }
-          }
-        }
-      )
-      setVerified(true)
-    } catch (_) {}
-    setIsVerifying(false)
-  }
+  const navigate = useNavigate()
+  const location = useLocation()
+  const emailFromState = location.state?.email || ''
 
-  const onSetPassword = async ({ email, code, newPassword }) => {
+  const onSubmit = async ({ email, code, newPassword }) => {
     setIsLoading(true)
     try {
       await toast.promise(
-        axios.post('http://mytest1.runasp.net/api/Identity/Account/reset-password', { email, code, newPassword }),
+        axios.patch('http://mytest1.runasp.net/api/Identity/Account/reset-password', { 
+          email, 
+          code, 
+          newPassword 
+        }),
         {
-          pending: 'Updating password... ',
-          success: 'Password updated. You can login now',
+          pending: t('reset_pending'),
+          success: t('reset_success'),
           error: {
             render({ data }) {
               const err = data
-              return err?.response?.data?.message || 'Failed to update password'
+              return err?.response?.data?.message || t('reset_failed')
             }
           }
         }
       )
-    } catch (_) {}
-    setIsLoading(false)
+      navigate('/login')
+    } catch (_) {
+      // Error handled by toast
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
-    <Box sx={{ maxWidth: '1400px', mx: 'auto', px: { xs: 2, md: 3 }, py: { xs: 3, md: 6 } }}>
+    <Box sx={{ maxWidth: '1400px', mx: 'auto', px: { xs: 2, md: 3 }, py: { xs: 3, md: 6 }, direction: dir }}>
       <Paper elevation={0} sx={{
         p: { xs: 3, md: 4 },
         borderRadius: 3,
@@ -71,53 +64,94 @@ export default function ResetPassword() {
       }}>
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '0.95fr 1.05fr' }, gap: { xs: 3, md: 5 }, alignItems: 'center' }}>
           <Box>
-            <Typography variant="h4" sx={{ fontWeight: 900, mb: 0.75 }}>
-              <span className="text-gradient">Reset password</span>
+            <Typography variant="h4" sx={{ fontWeight: 900, mb: 0.75, textAlign: dir === 'rtl' ? 'right' : 'left' }}>
+              <span className="text-gradient">{t('reset_title')}</span>
             </Typography>
-            <Typography sx={{ color: 'rgba(15,23,42,0.72)', mb: 3 }}>Verify the code sent to your email, then set a new password.</Typography>
-            <Box component="form" onSubmit={handleSubmit(verified ? onSetPassword : onVerify)} sx={{ display: 'grid', gap: 1.75 }}>
+            <Typography sx={{ color: 'rgba(15,23,42,0.72)', mb: 3, textAlign: dir === 'rtl' ? 'right' : 'left' }}>
+              {t('reset_sub')}
+            </Typography>
+            
+            <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ display: 'grid', gap: 1.75 }}>
               <TextField
-                {...register('email', { required: 'Email is required', pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Invalid email' } })}
+                {...register('email', { 
+                  required: t('email_label') + ' ' + (dir === 'rtl' ? 'مطلوب' : 'required'),
+                  pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: t('email_label') + ' ' + (dir === 'rtl' ? 'غير صالح' : 'invalid') }
+                })}
                 error={!!errors.email}
                 helperText={errors.email?.message}
-                label="Email"
+                label={t('email_label')}
                 type="email"
                 size="medium"
                 fullWidth
-                placeholder="Enter your email"
-                InputProps={{ startAdornment: (<InputAdornment position="start"><EmailIcon fontSize="small" /></InputAdornment>) }}
+                placeholder={t('email_placeholder')}
+                defaultValue={emailFromState}
+                InputProps={{ 
+                  startAdornment: (<InputAdornment position="start"><EmailIcon fontSize="small" /></InputAdornment>) 
+                }}
+                sx={{ 
+                  direction: dir,
+                  '& .MuiInputBase-input': {
+                    textAlign: dir === 'rtl' ? 'right' : 'left'
+                  }
+                }}
               />
               <TextField
-                {...register('code', { required: 'Code is required', minLength: { value: 4, message: '4+ digits' } })}
+                {...register('code', { 
+                  required: t('code_label') + ' ' + (dir === 'rtl' ? 'مطلوب' : 'required'),
+                  minLength: { value: 4, message: dir === 'rtl' ? '4 أرقام فأكثر' : 'At least 4 characters' }
+                })}
                 error={!!errors.code}
                 helperText={errors.code?.message}
-                label="Code"
+                label={t('code_label')}
                 type="text"
                 size="medium"
                 fullWidth
-                placeholder="Enter the code"
+                placeholder={t('code_placeholder')}
+                InputProps={{ 
+                  startAdornment: (<InputAdornment position="start"><VpnKeyIcon fontSize="small" /></InputAdornment>) 
+                }}
+                sx={{ 
+                  direction: dir,
+                  '& .MuiInputBase-input': {
+                    textAlign: dir === 'rtl' ? 'right' : 'left'
+                  }
+                }}
               />
-              
-                <TextField
-                  {...register('newPassword', { required: 'Password is required', minLength: { value: 6, message: 'At least 6 characters' } })}
-                  error={!!errors.newPassword}
-                  helperText={errors.newPassword?.message}
-                  label="New password"
-                  type="password"
-                  size="medium"
-                  fullWidth
-                  placeholder="Enter a new password"
-                  InputProps={{ startAdornment: (<InputAdornment position="start"><LockIcon fontSize="small" /></InputAdornment>) }}
-                />
-           
-              <Button type="submit" variant="contained" disabled={isVerifying || isLoading} sx={{
+              <TextField
+                {...register('newPassword', { 
+                  required: t('new_password_label') + ' ' + (dir === 'rtl' ? 'مطلوبة' : 'required'),
+                  minLength: { value: 6, message: dir === 'rtl' ? 'على الأقل 6 أحرف' : 'At least 6 characters' }
+                })}
+                error={!!errors.newPassword}
+                helperText={errors.newPassword?.message}
+                label={t('new_password_label')}
+                type="password"
+                size="medium"
+                fullWidth
+                placeholder={t('new_password_placeholder')}
+                InputProps={{ 
+                  startAdornment: (<InputAdornment position="start"><LockIcon fontSize="small" /></InputAdornment>) 
+                }}
+                sx={{ 
+                  direction: dir,
+                  '& .MuiInputBase-input': {
+                    textAlign: dir === 'rtl' ? 'right' : 'left'
+                  }
+                }}
+              />
+              <Button type="submit" variant="contained" disabled={isLoading} sx={{
                 textTransform: 'none',
                 borderRadius: 999,
                 py: 1.1,
                 backgroundImage: 'linear-gradient(90deg, #6366f1 0%, #22d3ee 100%)',
                 boxShadow: '0 8px 22px rgba(99, 102, 241, 0.35)',
                 '&:hover': { backgroundImage: 'linear-gradient(90deg, #4f46e5 0%, #06b6d4 100%)', boxShadow: '0 10px 26px rgba(99, 102, 241, 0.45)' }
-              }}>{verified ? (isLoading ? 'Processing...' : 'Set new password') : (isVerifying ? 'Verifying...' : 'Verify code')}</Button>
+              }}>
+                {isLoading ? t('processing') : t('set_new_password_btn')}
+              </Button>
+              <Typography sx={{ fontSize: '0.95rem', color: 'rgba(15,23,42,0.75)', textAlign: dir === 'rtl' ? 'right' : 'left' }}>
+                {t('remembered_password')} <Link to="/login" style={{ color: '#4f46e5', textDecoration: 'none' }}>{t('back_to_login')}</Link>
+              </Typography>
             </Box>
           </Box>
           <Box sx={{ display: { xs: 'none', md: 'flex' }, justifyContent: 'center' }}>

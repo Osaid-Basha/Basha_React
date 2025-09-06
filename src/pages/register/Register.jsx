@@ -18,8 +18,10 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useLanguage } from '../../i18n/LanguageContext.jsx'
 
 export default function Register() {
+  const { t, dir } = useLanguage()
   // نموذج التسجيل الجديد يتطلب الحقول التالية:
   // email, userName, fullName, phoneNumber, password, confirmPassword, acceptTerms
   const schema = yup.object({
@@ -75,7 +77,7 @@ export default function Register() {
   };
  
   return (
-    <Box sx={{ maxWidth: '1400px', mx: 'auto', px: { xs: 2, md: 3 }, py: { xs: 3, md: 6 } }}>
+    <Box sx={{ maxWidth: '1400px', mx: 'auto', px: { xs: 2, md: 3 }, py: { xs: 3, md: 6 }, direction: dir }}>
       <Paper elevation={0} sx={{
         p: { xs: 3, md: 4 },
         borderRadius: 3,
@@ -86,87 +88,117 @@ export default function Register() {
       }}>
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '0.95fr 1.05fr' }, gap: { xs: 3, md: 5 }, alignItems: 'center' }}>
           <Box>
-            <Typography variant="h4" sx={{ fontWeight: 900, mb: 0.75 }}>
-              Create <span className="text-gradient">account</span>
+            <Typography variant="h4" sx={{ fontWeight: 900, mb: 0.75, textAlign: dir === 'rtl' ? 'right' : 'left' }}>
+              {t('register_title')}
             </Typography>
-            <Typography sx={{ color: 'rgba(15,23,42,0.72)', mb: 3 }}>Join and start shopping smarter</Typography>
+            <Typography sx={{ color: 'rgba(15,23,42,0.72)', mb: 3, textAlign: dir === 'rtl' ? 'right' : 'left' }}>{t('register_sub')}</Typography>
             <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ display: 'grid', gap: 1.75 }}>
               <TextField
                 {...register('fullName', {
-                  required: 'Full name is required',
-                  minLength: { value: 3, message: 'At least 3 characters' },
+                  required: t('full_name_label') + ' ' + 'مطلوب',
+                  minLength: { value: 3, message: 'على الأقل 3 أحرف' },
                 })}
                 error={!!errors.fullName}
                 helperText={errors.fullName?.message}
-                label="Full name"
+                label={t('full_name_label')}
                 size="medium"
                 fullWidth
-                placeholder="Your full name"
+                placeholder={t('full_name_placeholder')}
                 InputProps={{ startAdornment: (<InputAdornment position="start"><PersonIcon fontSize="small" /></InputAdornment>) }}
+                sx={{ 
+                  direction: dir,
+                  '& .MuiInputBase-input': {
+                    textAlign: dir === 'rtl' ? 'right' : 'left'
+                  }
+                }}
               />
               <TextField
                 {...register('userName', {
-                  required: 'Username is required',
-                  minLength: { value: 3, message: 'At least 3 characters' },
-                  pattern: { value: /^[a-zA-Z0-9_]+$/, message: 'Only letters, numbers, _' },
+                  required: t('username_label') + ' ' + 'مطلوب',
+                  minLength: { value: 3, message: 'على الأقل 3 أحرف' },
+                  pattern: { value: /^[a-zA-Z0-9_]+$/, message: 'حروف وأرقام وشرطة سفلية فقط' },
                 })}
                 error={!!errors.userName}
                 helperText={errors.userName?.message}
-                label="Username"
+                label={t('username_label')}
                 size="medium"
                 fullWidth
-                placeholder="Choose a username"
+                placeholder={t('username_placeholder')}
                 InputProps={{ startAdornment: (<InputAdornment position="start"><PersonIcon fontSize="small" /></InputAdornment>) }}
+                sx={{ 
+                  direction: dir,
+                  '& .MuiInputBase-input': {
+                    textAlign: dir === 'rtl' ? 'right' : 'left'
+                  }
+                }}
               />
               <TextField
                 {...register('email', {
-                  required: 'Email is required',
-                  pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Invalid email' },
+                  required: t('email_label') + ' ' + 'مطلوب',
+                  pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: t('email_label') + ' ' + 'غير صالح' },
                 })}
                 error={!!errors.email}
                 helperText={errors.email?.message}
-                label="Email"
+                label={t('email_label')}
                 type="email"
                 size="medium"
                 fullWidth
-                placeholder="Your email"
+                placeholder={t('email_placeholder')}
                 InputProps={{ startAdornment: (<InputAdornment position="start"><EmailIcon fontSize="small" /></InputAdornment>) }}
+                sx={{ 
+                  direction: dir,
+                  '& .MuiInputBase-input': {
+                    textAlign: dir === 'rtl' ? 'right' : 'left'
+                  }
+                }}
               />
               <TextField
                 {...register('phoneNumber', {
-                  required: 'Phone is required',
-                  pattern: { value: /^0\d{9}$/, message: 'Format: 0XXXXXXXXX' },
+                  required: t('phone_label') + ' ' + 'مطلوب',
+                  pattern: { value: /^0\d{9}$/, message: 'الصيغة: 0XXXXXXXXX' },
                 })}
                 error={!!errors.phoneNumber}
                 helperText={errors.phoneNumber?.message}
-                label="Phone number"
+                label={t('phone_label')}
                 type="tel"
                 size="medium"
                 fullWidth
-                placeholder="05XXXXXXXX"
+                placeholder={t('phone_placeholder')}
                 InputProps={{ startAdornment: (<InputAdornment position="start">+970</InputAdornment>) }}
+                sx={{ 
+                  direction: dir,
+                  '& .MuiInputBase-input': {
+                    textAlign: dir === 'rtl' ? 'right' : 'left'
+                  }
+                }}
               />
               <TextField
                 {...register('password', {
-                  required: 'Password is required',
-                  minLength: { value: 8, message: 'At least 8 characters' },
+                  required: t('password_label') + ' ' + 'مطلوبة',
+                  minLength: { value: 8, message: 'على الأقل 8 أحرف' },
                 })}
                 error={!!errors.password}
                 helperText={errors.password?.message}
-                label="Password"
+                label={t('password_label')}
                 type="password"
                 size="medium"
                 fullWidth
-                placeholder="Create a password"
+                placeholder={t('create_password_placeholder')}
                 InputProps={{ startAdornment: (<InputAdornment position="start"><LockIcon fontSize="small" /></InputAdornment>) }}
+                sx={{ 
+                  direction: dir,
+                  '& .MuiInputBase-input': {
+                    textAlign: dir === 'rtl' ? 'right' : 'left'
+                  }
+                }}
               />
-              <FormControlLabel control={<Checkbox size="small" required />} label={<span>I agree to the <a href="#" style={{ color: '#4f46e5', textDecoration: 'none' }}>Terms</a> and <a href="#" style={{ color: '#4f46e5', textDecoration: 'none' }}>Privacy</a></span>} />
+              <FormControlLabel control={<Checkbox size="small" required />} label={<span>{t('terms_text')}</span>} />
               <Button type="submit" variant="contained" disabled={isLoading} sx={{
                 textTransform: 'none', borderRadius: 999, py: 1.1,
                 backgroundImage: 'linear-gradient(90deg, #6366f1 0%, #22d3ee 100%)', boxShadow: '0 8px 22px rgba(99, 102, 241, 0.35)',
                 '&:hover': { backgroundImage: 'linear-gradient(90deg, #4f46e5 0%, #06b6d4 100%)', boxShadow: '0 10px 26px rgba(99, 102, 241, 0.45)' }
-              }}>{isLoading ? 'Processing...' : 'Register'}</Button>
-              <Typography sx={{ fontSize: '0.95rem', color: 'rgba(15,23,42,0.75)' }}>Already have an account? <Link to="/login" style={{ color: '#4f46e5', textDecoration: 'none' }}>Log in</Link></Typography>
+              }}>{isLoading ? t('register_pending') : t('register_btn')}</Button>
+              <Typography sx={{ fontSize: '0.95rem', color: 'rgba(15,23,42,0.75)', textAlign: dir === 'rtl' ? 'right' : 'left' }}>{t('already_have_account')} <Link to="/login" style={{ color: '#4f46e5', textDecoration: 'none' }}>{t('login_link')}</Link></Typography>
             </Box>
           </Box>
           <Box sx={{ display: { xs: 'none', md: 'flex' }, justifyContent: 'center' }}>

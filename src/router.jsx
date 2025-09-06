@@ -31,12 +31,12 @@ const router = createBrowserRouter([
     element: <Cart/>,
   },
   {
-    path: "/forgotPassword",
+    path: "/forgot-password",
     element: <ForgotPasswor/>,
   },
   
   {
-    path: "/resetPassword",
+    path: "/reset-password",
     element: <ResetPassword/>,
   }
   ,
