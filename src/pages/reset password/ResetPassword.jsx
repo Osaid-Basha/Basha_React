@@ -28,7 +28,7 @@ export default function ResetPassword() {
     setIsLoading(true)
     try {
       await toast.promise(
-        axios.patch('http://mytest1.runasp.net/api/Identity/Account/reset-password', { 
+        axios.patch('https://kashop1.runasp.net/api/Identity/Account/reset-password', { 
           email, 
           code, 
           newPassword 

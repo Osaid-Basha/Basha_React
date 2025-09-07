@@ -28,7 +28,7 @@ export default function Login() {
     setIsLoading(true);
     try {
       const res = await toast.promise(
-        axios.post("http://mytest1.runasp.net/api/Identity/Account/Login", data),
+        axios.post("https://kashop1.runasp.net/api/Identity/Account/Login", data),
         {
           pending: t('login_pending'),
           success: t('login_success'),

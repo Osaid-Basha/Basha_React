@@ -50,13 +50,13 @@ export default function Register() {
       .oneOf([true], 'You must accept the terms')
   })
   const navigate = useNavigate();
-  const { register, handleSubmit, formState: { errors } } = useForm({ mode: 'onTouched' },{resolver:yupResolver(schema)});
+  const { register, handleSubmit, formState: { errors } } = useForm({ mode: 'onTouched', resolver: yupResolver(schema) });
   const [isLoading, setIsLoading] = React.useState(false);
   const onSubmit = async(data) => { 
     setIsLoading(true);
     try {
       await toast.promise(
-        axios.post("http://mytest1.runasp.net/api/Identity/Account/Register", data),
+        axios.post("https://kashop1.runasp.net/api/Identity/Account/Register", data),
         {
           pending: 'Processing... ',
           success: 'Registered successfully',

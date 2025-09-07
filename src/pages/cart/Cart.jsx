@@ -8,7 +8,7 @@ import Divider from '@mui/material/Divider';
 import Chip from '@mui/material/Chip';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import TextField from '@mui/material/TextField';
+
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -16,27 +16,30 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import PaymentIcon from '@mui/icons-material/Payment';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import axios from 'axios';
-import { useLanguage } from '../../i18n/LanguageContext.jsx';
 
-const CART_API_BASE = 'https://kashop1.runasp.net/api/Customer/Carts';
-const authHeaders = () => {
-  const token = localStorage.getItem('auth_token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
+import { useLanguage } from '../../i18n/LanguageContext.jsx';
+import { toast } from 'react-toastify';
+import AxiosUserInstanse from '../../api/AxiosUserInstanse.jsx';
+
+
+
 
 export default function Cart() {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [cartItems, setCartItems] = React.useState([]);
+  const [cartTotal, setCartTotal] = React.useState(0);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [productImages, setProductImages] = React.useState({});
+  
+  
   
   React.useEffect(() => {
     const fetchCart = async () => {
       try {
-        const res = await axios.get(CART_API_BASE, { headers: authHeaders() });
+        const res = await AxiosUserInstanse.get(`/Carts`)
         const data = res.data;
-        setCartItems(Array.isArray(data) ? data : (data?.items || []));
+        setCartItems(data.items);
       } catch (err) {
         console.error("Error fetching cart:", err);
       } finally {
@@ -47,71 +50,69 @@ export default function Cart() {
     fetchCart();
   }, []);
   
-  const addToCart = async (productId, quantity = 1) => {
-    try {
-      await axios.post(
-        CART_API_BASE,
-        { productId, quantity },
-        { headers: authHeaders() }
-      );
-      const res = await axios.get(CART_API_BASE, { headers: authHeaders() });
-      const data = res.data;
-      setCartItems(Array.isArray(data) ? data : (data?.items || []));
-    } catch (err) {
-      console.error('Error adding to cart:', err);
-    }
-  };
 
-  const [addId, setAddId] = React.useState('');
-  const [addQty, setAddQty] = React.useState(1);
+ 
+  
 
 
  
 
   const handleQuantityChange = async (itemId, newQuantity) => {
-    const current = cartItems.find(x => x.id === itemId);
+    const current = cartItems.find(x => x.productId === itemId);
     if (!current) return;
     if (newQuantity < 1) return;
     try {
-      if (newQuantity === current.quantity + 1) {
-        await axios.post(`${CART_API_BASE}/increment/${itemId}`, null, { headers: authHeaders() });
-      } else if (newQuantity === current.quantity - 1) {
-        await axios.post(`${CART_API_BASE}/decrement/${itemId}`, null, { headers: authHeaders() });
+      if (newQuantity === current.count + 1) {
+        await AxiosUserInstanse.post(`/Carts/increment/${itemId}`);
+        toast.success(t('quantity_increased'));
+      } else if (newQuantity === current.count - 1) {
+        await AxiosUserInstanse.post(`/Carts/decrement/${itemId}`);
+        toast.success(t('quantity_decreased'));
       } else {
-        // For now only +/- 1 supported by API
+       
         return;
       }
-      const res = await axios.get(CART_API_BASE, { headers: authHeaders() });
-      const data = res.data;
-      setCartItems(Array.isArray(data) ? data : (data?.items || []));
+       const res = await AxiosUserInstanse.get(`/Carts`)
+        const data = res.data;
+        setCartItems(data.items);
     } catch (err) {
       console.error('Error updating quantity:', err);
+      toast.error(t('quantity_update_failed'));
     }
   };
 
   const handleRemoveItem = async (itemId) => {
     try {
-      await axios.delete(`${CART_API_BASE}/${itemId}`, { headers: authHeaders() });
-      const res = await axios.get(CART_API_BASE, { headers: authHeaders() });
+      await AxiosUserInstanse.delete(`/Carts/${itemId}`);
+      const res = await AxiosUserInstanse.get(`/Carts`);
       const data = res.data;
-      setCartItems(Array.isArray(data) ? data : (data?.items || []));
+      setCartItems(data.items);
+      toast.success(t('item_removed_success'));
     } catch (err) {
       console.error('Error removing item:', err);
+      toast.error(t('item_remove_failed'));
     }
   };
 
   const handleClearCart = async () => {
-    if (!window.confirm('هل أنت متأكد من حذف جميع المنتجات من السلة؟')) return;
+    
     try {
-      await axios.delete(`${CART_API_BASE}/clear`, { headers: authHeaders() });
+      await AxiosUserInstanse.delete(`/Carts/clear`);
       setCartItems([]);
+      setCartTotal(0);
+      toast.success(t('cart_cleared_success'));
     } catch (err) {
       console.error('Error clearing cart:', err);
+      toast.error(t('cart_clear_failed'));
     }
   };
 
   const calculateSubtotal = () => {
-    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+    // Use cartTotal from API if available, otherwise calculate from items
+    if (cartTotal > 0) {
+      return cartTotal;
+    }
+    return cartItems.reduce((total, item) => total + (item.totalPrice || (item.price * item.count)), 0);
   };
 
   const calculateShipping = () => {
@@ -124,7 +125,7 @@ export default function Cart() {
   };
 
   const getTotalItems = () => {
-    return cartItems.reduce((total, item) => total + item.quantity, 0);
+    return cartItems.reduce((total, item) => total + item.count, 0);
   };
 
   if (false) {
@@ -166,29 +167,6 @@ export default function Cart() {
             {cartItems.length === 0 ? 'إدارة مشترياتك ومراجعة طلبك قبل الدفع' : `${t('items_in_cart')(getTotalItems())} - ${t('total')}: ${calculateTotal().toFixed(2)}$`}
           </Typography>
           <Box sx={{ display: 'flex', gap: 1, mt: 2, justifyContent: 'center' }}>
-            <TextField 
-              size="small"
-              label="ID المنتج"
-              value={addId}
-              onChange={(e) => setAddId(e.target.value)}
-              sx={{ width: 180 }}
-            />
-            <TextField 
-              size="small"
-              type="number"
-              label="الكمية"
-              value={addQty}
-              onChange={(e) => setAddQty(Math.max(1, Number(e.target.value) || 1))}
-              sx={{ width: 120 }}
-              inputProps={{ min: 1 }}
-            />
-            <Button 
-              variant="outlined"
-              onClick={() => addId && addToCart(Number(addId), Number(addQty))}
-              sx={{ textTransform: 'none' }}
-            >
-              إضافة للسلة
-            </Button>
           </Box>
         </Box>
       </Box>
@@ -244,7 +222,7 @@ export default function Cart() {
 
             <Box sx={{ display: 'grid', gap: 2 }}>
               {cartItems.map((item) => (
-                <Card key={item.id} sx={{ 
+                <Card key={item.productId} sx={{ 
                   background: '#fff', 
                   border: '1px solid rgba(15,23,42,0.08)', 
                   borderRadius: 2, 
@@ -263,14 +241,17 @@ export default function Cart() {
                       }}>
                         <Box 
                           component="img" 
-                          src={item.image} 
-                          alt={item.name}
+                          src={item.image || item.mainImageUrl || productImages[item.productId] || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik00MCA0MEg2MFY2MEg0MFY0MFoiIGZpbGw9IiM5Q0E0QUYiLz4KPHN2Zz4K'} 
+                          alt={item.productName}
                           sx={{ 
                             width: '100%', 
                             height: '100%', 
                             objectFit: 'contain',
                             display: 'block'
                           }} 
+                          onError={(e) => {
+                            e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik00MCA0MEg2MFY2MEg0MFY0MFoiIGZpbGw9IiM5Q0E0QUYiLz4KPHN2Zz4K';
+                          }}
                         />
                       </Box>
 
@@ -286,7 +267,7 @@ export default function Cart() {
                           WebkitBoxOrient: 'vertical',
                           overflow: 'hidden'
                         }}>
-                          {item.name}
+                          {item.productName}
                         </Typography>
                         <Typography sx={{ 
                           fontSize: 18, 
@@ -297,7 +278,7 @@ export default function Cart() {
                           {item.price.toFixed(2)}$
                         </Typography>
                         <Chip 
-                          label={`متوفر: ${item.maxQuantity || 0}`} 
+                          label={`الكمية: ${item.count}`} 
                           size="small" 
                           sx={{ 
                             background: 'rgba(15,23,42,0.04)', 
@@ -312,8 +293,8 @@ export default function Cart() {
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <IconButton 
-                            onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                            disabled={item.quantity <= 1}
+                            onClick={() => handleQuantityChange(item.productId, item.count - 1)}
+                            disabled={item.count <= 1}
                             sx={{ 
                               width: 36, 
                               height: 36, 
@@ -339,12 +320,12 @@ export default function Cart() {
                             fontSize: 14,
                             color: '#4f46e5'
                           }}>
-                            {item.quantity}
+                            {item.count}
                           </Box>
                           
                           <IconButton 
-                            onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                            disabled={item.quantity >= (item.maxQuantity || 999)}
+                            onClick={() => handleQuantityChange(item.productId, item.count + 1)}
+                            disabled={item.count >= 999}
                             sx={{ 
                               width: 36, 
                               height: 36, 
@@ -364,11 +345,11 @@ export default function Cart() {
                           color: '#16a34a',
                           textAlign: 'center'
                         }}>
-                          {(item.price * item.quantity).toFixed(2)}$
+                          {item.totalPrice.toFixed(2)}$
                         </Typography>
 
                         <IconButton 
-                          onClick={() => handleRemoveItem(item.id)}
+                          onClick={() => handleRemoveItem(item.productId)}
                           sx={{ 
                             color: '#ef4444',
                             '&:hover': { background: 'rgba(239,68,68,0.1)' }

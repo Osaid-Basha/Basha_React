@@ -79,6 +79,15 @@ const dictionaries = {
     // ProductList
     add_to_cart: 'أضف إلى السلة',
     added_to_cart: 'تمت الإضافة',
+    product_added_success: 'تم إضافة المنتج إلى السلة بنجاح',
+    product_add_failed: 'فشل في إضافة المنتج إلى السلة',
+    item_removed_success: 'تم حذف المنتج من السلة بنجاح',
+    item_remove_failed: 'فشل في حذف المنتج من السلة',
+    cart_cleared_success: 'تم مسح السلة بنجاح',
+    cart_clear_failed: 'فشل في مسح السلة',
+    quantity_increased: 'تم زيادة الكمية بنجاح',
+    quantity_decreased: 'تم تقليل الكمية بنجاح',
+    quantity_update_failed: 'فشل في تحديث الكمية',
 
     // Cart
     cart_title: 'سلة التسوق',
@@ -271,6 +280,15 @@ const dictionaries = {
 
     add_to_cart: 'Add to cart',
     added_to_cart: 'Added',
+    product_added_success: 'Product added to cart successfully',
+    product_add_failed: 'Failed to add product to cart',
+    item_removed_success: 'Item removed from cart successfully',
+    item_remove_failed: 'Failed to remove item from cart',
+    cart_cleared_success: 'Cart cleared successfully',
+    cart_clear_failed: 'Failed to clear cart',
+    quantity_increased: 'Quantity increased successfully',
+    quantity_decreased: 'Quantity decreased successfully',
+    quantity_update_failed: 'Failed to update quantity',
 
     cart_title: 'Shopping Cart',
     back: 'Back',

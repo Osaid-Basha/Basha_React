@@ -11,6 +11,7 @@ import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import axios from 'axios';
 import { useLanguage } from '../../i18n/LanguageContext.jsx';
+import { toast } from 'react-toastify';
 
 
 export default function ProductList({ title = 'منتجات مختارة', layout = 'grid', viewAllHref, query = '', minPrice, maxPrice, minRate, sort, hasDiscountOnly = false }) {
@@ -19,20 +20,20 @@ export default function ProductList({ title = 'منتجات مختارة', layou
   const [addedIds, setAddedIds] = React.useState(new Set());
  
   
-
+  const token = localStorage.getItem('auth_token');
   const addToCart = async (id) => {
     try {
-      const token = localStorage.getItem('auth_token');
       const res = await axios.post(
         'https://kashop1.runasp.net/api/Customer/Carts',
-        { productId: id, quantity: 1 },
-        { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+        { productId: id },
+        { headers: { Authorization: `Bearer ${token}` }  }
       );
-      setAddedIds((prev) => new Set(prev).add(id));
-      console.log('Added to cart:', res.data);
+      
+      setAddedIds(prev => new Set([...prev, id]));
+      toast.success(t('product_added_success'));
     } catch (error) {
       console.error('Error adding to cart:', error?.response?.data || error?.message);
-      alert(`حدث خطأ أثناء إضافة المنتج للسلة ${id}`);
+      toast.error(t('product_add_failed'));
     }
   };
   

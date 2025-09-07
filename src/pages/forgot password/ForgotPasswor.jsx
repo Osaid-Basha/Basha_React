@@ -25,7 +25,7 @@ export default function ForgotPasswor() {
     setIsLoading(true)
     try {
       await toast.promise(
-        axios.post("http://mytest1.runasp.net/api/Identity/Account/forgot-password", { email: data.email }),
+        axios.post("https://kashop1.runasp.net/api/Identity/Account/forgot-password", { email: data.email }),
         {
           pending: t('forgot_pending'),
           success: t('forgot_success'),

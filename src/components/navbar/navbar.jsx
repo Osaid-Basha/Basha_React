@@ -219,7 +219,7 @@ function ResponsiveAppBar() {
                     '&:hover': { backgroundColor: 'rgba(15,23,42,0.08)' },
                   }}
                 >
-                  {t(page.label === 'الرئيسية' || page.label === 'Home' ? 'nav_home' : 'nav_products')}
+                  {t(page.label)}
                 </Button>
               );
             })}
