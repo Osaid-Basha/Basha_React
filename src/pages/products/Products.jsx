@@ -1,15 +1,23 @@
 import * as React from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
+import { useNavigate } from 'react-router-dom';
+import {
+  Box,
+  Typography,
+  TextField,
+  Slider,
+  MenuItem,
+  Button
+} from '@mui/material';
+import {
+  ArrowBack as ArrowBackIcon,
+  ShoppingBag as ShoppingBagIcon
+} from '@mui/icons-material';
 import ProductList from '../../components/product/ProductList';
-import TextField from '@mui/material/TextField';
-import Slider from '@mui/material/Slider';
-import MenuItem from '@mui/material/MenuItem';
-import Button from '@mui/material/Button';
 import { useLanguage } from '../../i18n/LanguageContext';
 
 export default function Products() {
   const { t, dir } = useLanguage();
+  const navigate = useNavigate();
   const [query, setQuery] = React.useState('');
   const [priceRange, setPriceRange] = React.useState([0, 1000]);
   const [minRate, setMinRate] = React.useState(0);
@@ -20,30 +28,132 @@ export default function Products() {
 
   
   return (
-    <>
-      <Box
-        sx={{
-          width: '100%',
-          background: 'linear-gradient(135deg, #eef2ff 0%, #fff 40%)',
-          borderBottom: '1px solid rgba(15,23,42,0.06)',
-        }}
-      >
-        <Box
-          sx={{
-            width: 'min(1400px, 96%)',
-            mx: 'auto',
-            py: { xs: 4, md: 6 },
-            display: 'grid',
-            gap: 1,
-            textAlign: dir === 'rtl' ? 'right' : 'left',
-          }}
-        >
-          <Typography sx={{ fontSize: { xs: 24, md: 36 }, fontWeight: 900, letterSpacing: '0.01em' }}>
-            {t('explore_products')}
-          </Typography>
-          <Typography sx={{ color: 'rgba(15,23,42,0.7)', fontSize: { xs: 13.5, md: 15 } }}>
-            {t('explore_products_subtitle')}
-          </Typography>
+    <Box sx={{ 
+      width: 'min(1400px, 96%)', 
+      mx: 'auto', 
+      mt: { xs: 3, md: 4 }, 
+      p: 2,
+      direction: dir,
+      minHeight: '100vh'
+    }}>
+      {/* Header */}
+      <Box sx={{ 
+        background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%)',
+        border: '1px solid rgba(79, 70, 229, 0.15)',
+        backdropFilter: 'blur(20px) saturate(180%)',
+        boxShadow: '0 12px 40px rgba(79, 70, 229, 0.15), 0 4px 12px rgba(0,0,0,0.08)',
+        borderRadius: 4,
+        p: 6,
+        mb: 6,
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        {/* Background decorative elements */}
+        <Box sx={{ 
+          position: 'absolute', 
+          top: -30, 
+          right: -30, 
+          width: 80, 
+          height: 80, 
+          borderRadius: '50%', 
+          background: 'linear-gradient(135deg, rgba(79, 70, 229, 0.15) 0%, rgba(34, 197, 94, 0.15) 100%)', 
+          zIndex: 0 
+        }} />
+        <Box sx={{ 
+          position: 'absolute', 
+          bottom: -20, 
+          left: -20, 
+          width: 60, 
+          height: 60, 
+          borderRadius: '50%', 
+          background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(245, 158, 11, 0.15) 100%)', 
+          zIndex: 0 
+        }} />
+        
+        <Box sx={{ position: 'relative', zIndex: 1 }}>
+          <Button
+            startIcon={<ArrowBackIcon />}
+            onClick={() => navigate(-1)}
+            sx={{ 
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              textTransform: 'none', 
+              color: 'rgba(15,23,42,0.8)',
+              borderRadius: 2,
+              px: 3,
+              py: 1.5,
+              fontWeight: 600,
+              background: 'rgba(255,255,255,0.8)',
+              border: '1px solid rgba(79, 70, 229, 0.2)',
+              '&:hover': {
+                backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                borderColor: 'rgba(79, 70, 229, 0.3)',
+                transform: 'translateY(-1px)',
+                boxShadow: '0 4px 12px rgba(79, 70, 229, 0.2)'
+              },
+              transition: 'all 0.3s ease'
+            }}
+          >
+            {t('back')}
+          </Button>
+          
+          <Box sx={{ textAlign: 'center', mt: 6 }}>
+            <Box sx={{ 
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 80,
+              height: 80,
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #4f46e5 0%, #16a34a 100%)',
+              mb: 3,
+              boxShadow: '0 8px 24px rgba(79, 70, 229, 0.4)',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                transform: 'scale(1.05)',
+                boxShadow: '0 12px 32px rgba(79, 70, 229, 0.6)'
+              }
+            }}>
+              <ShoppingBagIcon sx={{ color: 'white', fontSize: 40 }} />
+            </Box>
+            
+            <Typography sx={{ 
+              fontSize: 32, 
+              fontWeight: 900, 
+              color: '#16a34a',
+              mb: 3,
+              textAlign: 'center',
+              textShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            }}>
+              {t('explore_products')}
+            </Typography>
+            
+            <Typography sx={{ 
+              fontSize: 18, 
+              color: 'rgba(15,23,42,0.7)', 
+              fontWeight: 500,
+              textAlign: 'center',
+              lineHeight: 1.6,
+              maxWidth: 600,
+              mx: 'auto',
+              mb: 2
+            }}>
+              {t('explore_products_subtitle')}
+            </Typography>
+            
+            <Typography sx={{ 
+              fontSize: 15, 
+              color: 'rgba(15,23,42,0.6)', 
+              fontWeight: 400,
+              textAlign: 'center',
+              lineHeight: 1.5,
+              maxWidth: 500,
+              mx: 'auto'
+            }}>
+              {t('explore_products_description') || 'اكتشف مجموعة واسعة من المنتجات عالية الجودة بأسعار تنافسية'}
+            </Typography>
+          </Box>
         </Box>
       </Box>
 
@@ -85,8 +195,7 @@ export default function Products() {
       <Box sx={{ my: { xs: 1, md: 2 } }}>
         <ProductList title={t('our_new')} layout="grid" />
       </Box>
-    </>
+    </Box>
   );
 }
-
 

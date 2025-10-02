@@ -17,9 +17,9 @@ export default function Footer() {
                 <Link to="/">
                   <img src={logo} alt="Kashop" className={styles.logo} />
                 </Link>
-                <div className={styles.brandName}>{lang === 'ar' ? 'كاشوب' : 'Kashop'}</div>
+                <div className={styles.brandName}>{t('brand_name')}</div>
               </div>
-              <div className={styles.muted}>{lang === 'ar' ? 'متجرك الموثوق لتجربة تسوّق سلسة ومنتجات مختارة بعناية وعروض رائعة.' : 'Your trusted store for a smooth shopping experience, curated products, and great deals.'}</div>
+              <div className={styles.muted}>{t('brand_description')}</div>
               <div className={styles.socials}>
                 <a href="#" className={styles.socialBtn} aria-label="X">𝕏</a>
                 <a href="#" className={styles.socialBtn} aria-label="Instagram">◎</a>
@@ -30,9 +30,9 @@ export default function Footer() {
               <div className={styles.colTitle}>{t('footer_store')}</div>
               <ul className={styles.list}>
                 <li><Link to="/" className={styles.link}>{t('footer_home')}</Link></li>
-                <li><Link to="/cart" className={styles.link}>{t('footer_cart')}</Link></li>
-                <li><Link to="/register" className={styles.link}>{t('footer_register')}</Link></li>
-                <li><Link to="/login" className={styles.link}>{t('footer_login')}</Link></li>
+                <li><Link to="/products" className={styles.link}>{t('nav_products')}</Link></li>
+                <li><Link to="/about" className={styles.link}>{t('about_title')}</Link></li>
+                <li><Link to="/contact" className={styles.link}>{t('footer_contact')}</Link></li>
               </ul>
             </div>
             <div>
@@ -41,7 +41,7 @@ export default function Footer() {
                 <li><a href="#" className={styles.link}>{t('footer_faq')}</a></li>
                 <li><a href="#" className={styles.link}>{t('footer_returns')}</a></li>
                 <li><a href="#" className={styles.link}>{t('footer_shipping')}</a></li>
-                <li><a href="#" className={styles.link}>{t('footer_contact')}</a></li>
+                <li><Link to="/contact" className={styles.link}>{t('footer_contact')}</Link></li>
               </ul>
             </div>
             <div>

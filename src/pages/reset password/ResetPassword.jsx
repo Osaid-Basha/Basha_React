@@ -74,8 +74,8 @@ export default function ResetPassword() {
             <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ display: 'grid', gap: 1.75 }}>
               <TextField
                 {...register('email', { 
-                  required: t('email_label') + ' ' + (dir === 'rtl' ? 'مطلوب' : 'required'),
-                  pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: t('email_label') + ' ' + (dir === 'rtl' ? 'غير صالح' : 'invalid') }
+                  required: t('email_required'),
+                  pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: t('email_invalid') }
                 })}
                 error={!!errors.email}
                 helperText={errors.email?.message}
@@ -97,8 +97,8 @@ export default function ResetPassword() {
               />
               <TextField
                 {...register('code', { 
-                  required: t('code_label') + ' ' + (dir === 'rtl' ? 'مطلوب' : 'required'),
-                  minLength: { value: 4, message: dir === 'rtl' ? '4 أرقام فأكثر' : 'At least 4 characters' }
+                  required: t('code_required'),
+                  minLength: { value: 4, message: t('code_min_length') }
                 })}
                 error={!!errors.code}
                 helperText={errors.code?.message}
@@ -119,8 +119,8 @@ export default function ResetPassword() {
               />
               <TextField
                 {...register('newPassword', { 
-                  required: t('new_password_label') + ' ' + (dir === 'rtl' ? 'مطلوبة' : 'required'),
-                  minLength: { value: 6, message: dir === 'rtl' ? 'على الأقل 6 أحرف' : 'At least 6 characters' }
+                  required: t('new_password_required'),
+                  minLength: { value: 6, message: t('new_password_min_length') }
                 })}
                 error={!!errors.newPassword}
                 helperText={errors.newPassword?.message}

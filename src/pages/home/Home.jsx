@@ -26,7 +26,7 @@ export default function Home() {
 
       {/* Features Section */}
       <Box sx={{ width: 'min(1400px, 96%)', mx: 'auto', mt: { xs: 3, md: 6 } }}>
-        <Box sx={{ textAlign: 'right', mb: 2 }}>
+        <Box sx={{ textAlign: dir === 'rtl' ? 'right' : 'left', mb: 2 }}>
           <Typography sx={{ fontSize: { xs: 20, md: 26 }, fontWeight: 900, color: '#0f172a' }}>
             {t('home_why_us')}
           </Typography>
@@ -78,7 +78,7 @@ export default function Home() {
           background: 'linear-gradient(135deg, rgba(79,70,229,0.12), rgba(16,185,129,0.12))',
           border: '1px solid rgba(79,70,229,0.25)'
         }}>
-          <Box sx={{ textAlign: 'right' }}>
+          <Box sx={{ textAlign: dir === 'rtl' ? 'right' : 'left' }}>
             <Typography sx={{ fontSize: { xs: 18, md: 22 }, fontWeight: 900, color: '#0f172a', mb: 0.5 }}>
               {t('promo_title')}
             </Typography>
@@ -97,7 +97,7 @@ export default function Home() {
 
       {/* About Me Section - enhanced */}
       <Box sx={{ width: 'min(1400px, 96%)', mx: 'auto', mt: { xs: 4, md: 6 } }}>
-        <Box sx={{ textAlign: 'right', mb: 2 }}>
+        <Box sx={{ textAlign: dir === 'rtl' ? 'right' : 'left', mb: 2 }}>
           <Typography sx={{ fontSize: { xs: 20, md: 26 }, fontWeight: 900, color: '#0f172a' }}>
             {t('about_title')}
           </Typography>
@@ -119,7 +119,7 @@ export default function Home() {
                 background: 'radial-gradient(700px 180px at 100% 0%, rgba(79,70,229,0.18), transparent), linear-gradient(135deg, rgba(79,70,229,0.18), rgba(16,185,129,0.18))',
                 border: '1px solid rgba(79,70,229,0.25)'
               }} />
-              <Typography sx={{ fontSize: 15.5, color: 'rgba(15,23,42,0.85)', textAlign: 'right', lineHeight: 2 }}>
+              <Typography sx={{ fontSize: 15.5, color: 'rgba(15,23,42,0.85)', textAlign: dir === 'rtl' ? 'right' : 'left', lineHeight: 2 }}>
                 {t('about_p1')} {t('about_p2')}
               </Typography>
               <Box sx={{ display: 'grid', gap: 1 }}>
@@ -134,7 +134,7 @@ export default function Home() {
 
       {/* Contact Me Section */}
       <Box sx={{ width: 'min(1400px, 96%)', mx: 'auto', mt: { xs: 4, md: 6 }, mb: { xs: 6, md: 8 } }}>
-        <Box sx={{ textAlign: 'right', mb: 2 }}>
+        <Box sx={{ textAlign: dir === 'rtl' ? 'right' : 'left', mb: 2 }}>
           <Typography sx={{ fontSize: { xs: 20, md: 26 }, fontWeight: 900, color: '#0f172a' }}>
             {t('contact_title')}
           </Typography>
@@ -151,12 +151,12 @@ export default function Home() {
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' } }}>
             <Box sx={{ p: { xs: 2, md: 3 } }}>
               <CardContent sx={{ p: 0 }}>
-                <Box component="form" onSubmit={(e) => { e.preventDefault(); alert('تم إرسال الرسالة بنجاح'); }} sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 1.5 }}>
+                <Box component="form" onSubmit={(e) => { e.preventDefault(); alert(t('contact_success_message')); }} sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 1.5 }}>
                   <TextField label={t('contact_name')} size="small" fullWidth sx={{ direction: dir }} />
                   <TextField label={t('contact_email')} size="small" type="email" fullWidth sx={{ direction: dir }} />
                   <TextField label={t('contact_subject')} size="small" fullWidth sx={{ direction: dir, gridColumn: { md: '1 / span 2' } }} />
                   <TextField label={t('contact_message')} size="small" fullWidth multiline minRows={4} sx={{ gridColumn: { md: '1 / span 2' }, direction: dir }} />
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
+                  <Box sx={{ display: 'flex', justifyContent: dir === 'rtl' ? 'flex-start' : 'flex-end' }}>
                     <Button type="submit" variant="contained" sx={{ textTransform: 'none', borderRadius: 2, px: 3 }}>
                       {t('contact_send')}
                     </Button>

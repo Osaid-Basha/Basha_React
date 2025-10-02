@@ -63,7 +63,7 @@ export default function ForgotPasswor() {
             <Typography sx={{ color: 'rgba(15,23,42,0.72)', mb: 3, textAlign: dir === 'rtl' ? 'right' : 'left' }}>{t('forgot_sub')}</Typography>
             <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ display: 'grid', gap: 1.75 }}>
               <TextField
-                {...register('email', { required: t('email_label') + ' ' + 'مطلوب', pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: t('email_label') + ' ' + 'غير صالح' } })}
+                {...register('email', { required: t('email_required'), pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: t('email_invalid') } })}
                 error={!!errors.email}
                 helperText={errors.email?.message}
                 label={t('email_label')}

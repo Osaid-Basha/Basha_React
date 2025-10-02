@@ -27,27 +27,27 @@ export default function Register() {
   const schema = yup.object({
     fullName: yup
       .string()
-      .required('Full name is required')
-      .min(3, 'At least 3 characters'),
+      .required(t('full_name_required'))
+      .min(3, t('full_name_min_length')),
     userName: yup
       .string()
-      .required('Username is required')
-      .min(3, 'At least 3 characters'),
+      .required(t('username_required'))
+      .min(3, t('username_min_length')),
     email: yup
       .string()
-      .required('Email is required')
-      .email('Enter a valid email'),
+      .required(t('email_required'))
+      .email(t('email_invalid')),
     phoneNumber: yup
       .string()
-      .required('Phone number is required')
-      .matches(/^05\d{8}$/, 'Enter a valid Saudi phone number'),
+      .required(t('phone_required'))
+      .matches(/^05\d{8}$/, t('phone_invalid')),
     password: yup
       .string()
-      .required('Password is required')
-      .min(6, 'At least 6 characters'),
+      .required(t('password_required'))
+      .min(6, t('password_min_length')),
     acceptTerms: yup
       .boolean()
-      .oneOf([true], 'You must accept the terms')
+      .oneOf([true], t('terms_required'))
   })
   const navigate = useNavigate();
   const { register, handleSubmit, formState: { errors } } = useForm({ mode: 'onTouched', resolver: yupResolver(schema) });
@@ -55,20 +55,38 @@ export default function Register() {
   const onSubmit = async(data) => { 
     setIsLoading(true);
     try {
-      await toast.promise(
+      const res = await toast.promise(
         axios.post("https://kashop1.runasp.net/api/Identity/Account/Register", data),
         {
-          pending: 'Processing... ',
-          success: 'Registered successfully',
+          pending: t('register_pending'),
+          success: t('register_success'),
           error: {
             render({ data }) {
               const err = data;
-              return err?.response?.data?.message || 'Registration failed';
+              return err?.response?.data?.message || t('register_failed');
             }
           }
         }
       );
-      navigate('/login');
+      
+      // If registration is successful and returns a token, login automatically
+      if (res.data && res.data.token) {
+        localStorage.setItem('auth_token', res.data.token);
+        if (res.data.user) {
+          localStorage.setItem('user', JSON.stringify(res.data.user));
+        }
+        
+        // Trigger custom event to update navbar
+        window.dispatchEvent(new CustomEvent('userLogin', { 
+          detail: { user: res.data.user } 
+        }));
+        
+        // Navigate to home page
+        navigate('/', { replace: true });
+      } else {
+        // If no token, go to login page
+        navigate('/login');
+      }
     } catch (error) {
       console.log('catch error', error);
     } finally {
@@ -94,10 +112,7 @@ export default function Register() {
             <Typography sx={{ color: 'rgba(15,23,42,0.72)', mb: 3, textAlign: dir === 'rtl' ? 'right' : 'left' }}>{t('register_sub')}</Typography>
             <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ display: 'grid', gap: 1.75 }}>
               <TextField
-                {...register('fullName', {
-                  required: t('full_name_label') + ' ' + 'مطلوب',
-                  minLength: { value: 3, message: 'على الأقل 3 أحرف' },
-                })}
+                {...register('fullName')}
                 error={!!errors.fullName}
                 helperText={errors.fullName?.message}
                 label={t('full_name_label')}
@@ -113,11 +128,7 @@ export default function Register() {
                 }}
               />
               <TextField
-                {...register('userName', {
-                  required: t('username_label') + ' ' + 'مطلوب',
-                  minLength: { value: 3, message: 'على الأقل 3 أحرف' },
-                  pattern: { value: /^[a-zA-Z0-9_]+$/, message: 'حروف وأرقام وشرطة سفلية فقط' },
-                })}
+                {...register('userName')}
                 error={!!errors.userName}
                 helperText={errors.userName?.message}
                 label={t('username_label')}
@@ -133,10 +144,7 @@ export default function Register() {
                 }}
               />
               <TextField
-                {...register('email', {
-                  required: t('email_label') + ' ' + 'مطلوب',
-                  pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: t('email_label') + ' ' + 'غير صالح' },
-                })}
+                {...register('email')}
                 error={!!errors.email}
                 helperText={errors.email?.message}
                 label={t('email_label')}
@@ -153,10 +161,7 @@ export default function Register() {
                 }}
               />
               <TextField
-                {...register('phoneNumber', {
-                  required: t('phone_label') + ' ' + 'مطلوب',
-                  pattern: { value: /^0\d{9}$/, message: 'الصيغة: 0XXXXXXXXX' },
-                })}
+                {...register('phoneNumber')}
                 error={!!errors.phoneNumber}
                 helperText={errors.phoneNumber?.message}
                 label={t('phone_label')}
@@ -173,10 +178,7 @@ export default function Register() {
                 }}
               />
               <TextField
-                {...register('password', {
-                  required: t('password_label') + ' ' + 'مطلوبة',
-                  minLength: { value: 8, message: 'على الأقل 8 أحرف' },
-                })}
+                {...register('password')}
                 error={!!errors.password}
                 helperText={errors.password?.message}
                 label={t('password_label')}

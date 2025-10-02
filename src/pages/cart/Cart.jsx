@@ -20,35 +20,39 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useLanguage } from '../../i18n/LanguageContext.jsx';
 import { toast } from 'react-toastify';
 import AxiosUserInstanse from '../../api/AxiosUserInstanse.jsx';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 
 
 
 export default function Cart() {
-  const { t } = useLanguage();
+  const { t, dir } = useLanguage();
   const navigate = useNavigate();
-  const [cartItems, setCartItems] = React.useState([]);
-  const [cartTotal, setCartTotal] = React.useState(0);
-  const [isLoading, setIsLoading] = React.useState(true);
+  const queryClient = useQueryClient();
   const [productImages, setProductImages] = React.useState({});
   
   
   
-  React.useEffect(() => {
-    const fetchCart = async () => {
-      try {
-        const res = await AxiosUserInstanse.get(`/Carts`)
-        const data = res.data;
-        setCartItems(data.items);
-      } catch (err) {
-        console.error("Error fetching cart:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-  
-    fetchCart();
-  }, []);
+  const fetchCart = async () => {
+    try {
+      const res = await AxiosUserInstanse.get(`/Carts`);
+      return res.data;
+    } catch (err) {
+      console.error("Error fetching cart:", err);
+      throw err;
+    }
+  };
+
+  const {data, isLoading, isError, error} = useQuery({
+    queryKey: ['Cart'],
+    queryFn: fetchCart,
+    staleTime: 1000 * 60 * 5, 
+    refetchOnWindowFocus: false,
+  });
+
+  // Get cart items and total from data
+  const cartItems = data?.items || [];
+  const cartTotal = data?.total || 0;
   
 
  
@@ -61,6 +65,7 @@ export default function Cart() {
     const current = cartItems.find(x => x.productId === itemId);
     if (!current) return;
     if (newQuantity < 1) return;
+    
     try {
       if (newQuantity === current.count + 1) {
         await AxiosUserInstanse.post(`/Carts/increment/${itemId}`);
@@ -69,12 +74,13 @@ export default function Cart() {
         await AxiosUserInstanse.post(`/Carts/decrement/${itemId}`);
         toast.success(t('quantity_decreased'));
       } else {
-       
-        return;
+        // For other quantity changes, update directly
+        await AxiosUserInstanse.put(`/Carts/${itemId}`, { count: newQuantity });
+        toast.success(t('quantity_increased'));
       }
-       const res = await AxiosUserInstanse.get(`/Carts`)
-        const data = res.data;
-        setCartItems(data.items);
+      
+      // Invalidate and refetch cart data
+      queryClient.invalidateQueries(['Cart']);
     } catch (err) {
       console.error('Error updating quantity:', err);
       toast.error(t('quantity_update_failed'));
@@ -84,9 +90,10 @@ export default function Cart() {
   const handleRemoveItem = async (itemId) => {
     try {
       await AxiosUserInstanse.delete(`/Carts/${itemId}`);
-      const res = await AxiosUserInstanse.get(`/Carts`);
-      const data = res.data;
-      setCartItems(data.items);
+      
+      // Invalidate and refetch cart data
+      queryClient.invalidateQueries(['Cart']);
+      
       toast.success(t('item_removed_success'));
     } catch (err) {
       console.error('Error removing item:', err);
@@ -95,11 +102,20 @@ export default function Cart() {
   };
 
   const handleClearCart = async () => {
+    const confirmClear = window.confirm(
+      dir === 'rtl' 
+        ? 'هل أنت متأكد من مسح السلة؟' 
+        : 'Are you sure you want to clear the cart?'
+    );
+    
+    if (!confirmClear) return;
     
     try {
       await AxiosUserInstanse.delete(`/Carts/clear`);
-      setCartItems([]);
-      setCartTotal(0);
+      
+      // Invalidate and refetch cart data
+      queryClient.invalidateQueries(['Cart']);
+      
       toast.success(t('cart_cleared_success'));
     } catch (err) {
       console.error('Error clearing cart:', err);
@@ -108,7 +124,7 @@ export default function Cart() {
   };
 
   const calculateSubtotal = () => {
-    // Use cartTotal from API if available, otherwise calculate from items
+    
     if (cartTotal > 0) {
       return cartTotal;
     }
@@ -137,7 +153,7 @@ export default function Cart() {
   }
 
   return (
-    <Box sx={{ width: 'min(1400px, 96%)', mx: 'auto', mt: { xs: 3, md: 4 }, p: 2, direction: 'rtl' }}>
+    <Box sx={{ width: 'min(1400px, 96%)', mx: 'auto', mt: { xs: 3, md: 4 }, p: 2, direction: dir }}>
       {/* Header */}
       <Box sx={{ textAlign: 'center', mb: 4, p: 3, background: 'linear-gradient(135deg, rgba(99,102,241,0.1) 0%, rgba(34,197,94,0.1) 50%, rgba(245,158,11,0.1) 100%)', borderRadius: 3, border: '1px solid rgba(99,102,241,0.2)', position: 'relative', overflow: 'hidden' }}>
         <Box sx={{ position: 'absolute', top: -50, right: -50, width: 100, height: 100, borderRadius: '50%', background: 'rgba(99,102,241,0.1)', zIndex: 0 }} />
@@ -164,7 +180,7 @@ export default function Cart() {
             mx: 'auto',
             lineHeight: 1.6
           }}>
-            {cartItems.length === 0 ? 'إدارة مشترياتك ومراجعة طلبك قبل الدفع' : `${t('items_in_cart')(getTotalItems())} - ${t('total')}: ${calculateTotal().toFixed(2)}$`}
+            {cartItems.length === 0 ? t('cart_management_text') : `${t('items_in_cart')(getTotalItems())} - ${t('total')}: ${calculateTotal().toFixed(2)}$`}
           </Typography>
           <Box sx={{ display: 'flex', gap: 1, mt: 2, justifyContent: 'center' }}>
           </Box>
@@ -175,10 +191,10 @@ export default function Cart() {
         <Box sx={{ textAlign: 'center', py: 8 }}>
           <ShoppingCartIcon sx={{ fontSize: 80, color: 'rgba(15,23,42,0.3)', mb: 2 }} />
           <Typography sx={{ fontSize: 24, fontWeight: 700, color: 'rgba(15,23,42,0.8)', mb: 1 }}>
-            سلة التسوق فارغة
+            {t('cart_empty')}
           </Typography>
           <Typography sx={{ fontSize: 16, color: 'rgba(15,23,42,0.6)', mb: 3 }}>
-            لم تقم بإضافة أي منتجات إلى السلة بعد
+            {t('cart_empty_description')}
           </Typography>
           <Button 
             variant="contained" 
@@ -194,7 +210,7 @@ export default function Cart() {
               }
             }}
           >
-            تصفح المنتجات
+            {t('browse_products')}
           </Button>
         </Box>
       ) : (
@@ -278,7 +294,7 @@ export default function Cart() {
                           {item.price.toFixed(2)}$
                         </Typography>
                         <Chip 
-                          label={`الكمية: ${item.count}`} 
+                          label={`${t('quantity')}: ${item.count}`} 
                           size="small" 
                           sx={{ 
                             background: 'rgba(15,23,42,0.04)', 
@@ -381,15 +397,15 @@ export default function Cart() {
                   fontWeight: 900, 
                   color: 'rgba(15,23,42,0.9)',
                   mb: 2,
-                  textAlign: 'right'
+                  textAlign: dir === 'rtl' ? 'right' : 'left'
                 }}>
-                  ملخص الطلب
+                  {t('order_summary')}
                 </Typography>
 
                 <Box sx={{ display: 'grid', gap: 1.5, mb: 2 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Typography sx={{ fontSize: 14, color: 'rgba(15,23,42,0.7)' }}>
-                      المجموع الفرعي ({getTotalItems()} منتج)
+                      {t('subtotal')} ({getTotalItems()} {t('items')})
                     </Typography>
                     <Typography sx={{ fontSize: 16, fontWeight: 700, color: 'rgba(15,23,42,0.9)' }}>
                       {calculateSubtotal().toFixed(2)}$
@@ -398,16 +414,16 @@ export default function Cart() {
 
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Typography sx={{ fontSize: 14, color: 'rgba(15,23,42,0.7)' }}>
-                      رسوم التوصيل
+                      {t('shipping_fee')}
                     </Typography>
                     <Typography sx={{ fontSize: 16, fontWeight: 700, color: calculateShipping() === 0 ? '#16a34a' : 'rgba(15,23,42,0.9)' }}>
-                      {calculateShipping() === 0 ? 'مجاني' : `${calculateShipping().toFixed(2)}$`}
+                      {calculateShipping() === 0 ? t('free') : `${calculateShipping().toFixed(2)}$`}
                     </Typography>
                   </Box>
 
                   {calculateSubtotal() < 100 && (
                     <Chip 
-                      label={`أضف ${(100 - calculateSubtotal()).toFixed(2)}$ للحصول على توصيل مجاني`}
+                      label={t('add_for_free_shipping')((100 - calculateSubtotal()).toFixed(2))}
                       size="small"
                       sx={{ 
                         background: 'rgba(34,197,94,0.1)', 
@@ -423,7 +439,7 @@ export default function Cart() {
 
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Typography sx={{ fontSize: 18, fontWeight: 900, color: 'rgba(15,23,42,0.9)' }}>
-                      المجموع الكلي
+                      {t('total')}
                     </Typography>
                     <Typography sx={{ fontSize: 20, fontWeight: 900, color: '#16a34a' }}>
                       {calculateTotal().toFixed(2)}$
@@ -435,9 +451,7 @@ export default function Cart() {
                   variant="contained" 
                   fullWidth
                   startIcon={<PaymentIcon />}
-                  onClick={() => {
-                    alert('سيتم توجيهك لصفحة الدفع قريباً!');
-                  }}
+                  onClick={() => navigate('/checkout')}
                   sx={{ 
                     textTransform: 'none', 
                     borderRadius: 2, 
@@ -450,7 +464,7 @@ export default function Cart() {
                     mb: 2
                   }}
                 >
-                  متابعة للدفع
+                  {t('proceed_checkout')}
                 </Button>
 
                 <Button 
@@ -470,7 +484,7 @@ export default function Cart() {
                     }
                   }}
                 >
-                  متابعة التسوق
+                  {t('continue_shopping')}
                 </Button>
               </CardContent>
             </Card>

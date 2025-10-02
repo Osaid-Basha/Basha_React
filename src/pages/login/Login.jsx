@@ -27,28 +27,90 @@ export default function Login() {
    
     setIsLoading(true);
     try {
-      const res = await toast.promise(
-        axios.post("https://kashop1.runasp.net/api/Identity/Account/Login", data),
-        {
-          pending: t('login_pending'),
-          success: t('login_success'),
-          error: {
-            render({ data }) {
-              const err = data;
-              return err?.response?.data?.message || t('login_failed');
-            }
-          }
-        }
-      );
+      // Show loading toast
+      toast.loading(t('login_pending'), {
+        toastId: 'login-toast'
+      });
+      
+      const res = await axios.post("https://kashop1.runasp.net/api/Identity/Account/Login", data);
+      
+      
+      toast.dismiss('login-toast');
    
-     
-    localStorage.setItem('auth_token', res.data.token);
-    
+      
+      localStorage.setItem('auth_token', res.data.token);
       
     
-      navigate('/');
+      let userData;
+      if (res.data.user) {
+        localStorage.setItem('user', JSON.stringify(res.data.user));
+        userData = res.data.user;
+      } else {
+       
+        userData = {
+          name: data.email.split('@')[0],
+          email: data.email,
+          avatarUrl: ''
+        };
+        localStorage.setItem('user', JSON.stringify(userData));
+      }
+      
+      // Trigger custom event to update navbar immediately
+      window.dispatchEvent(new CustomEvent('userLogin', { 
+        detail: { user: userData } 
+      }));
+      
+      // Force immediate update
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('userLogin', { 
+          detail: { user: userData } 
+        }));
+      }, 100);
+    
+      // Show success message
+      toast.success(t('login_success_message'), {
+        position: "top-right",
+        autoClose: 1000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        style: {
+          direction: dir,
+          textAlign: dir === 'rtl' ? 'right' : 'left',
+          fontSize: '14px',
+          fontWeight: '500'
+        }
+      });
+      
+      // Navigate to home page immediately after successful login
+      console.log('Navigating to home page...');
+      
+      // Try multiple navigation methods to ensure it works
+      try {
+        navigate('/', { replace: true });
+      } catch (navError) {
+        console.log('Navigate failed, using window.location:', navError);
+        window.location.href = '/';
+      }
+      
+      // Backup navigation method
+      setTimeout(() => {
+        if (window.location.pathname !== '/') {
+          console.log('Backup navigation triggered');
+          window.location.href = '/';
+        }
+      }, 100);
     } catch (err) {
-      
+      console.error('Login error:', err);
+      toast.error(t('login_failed'), {
+        position: "top-right",
+        autoClose: 3000,
+        style: {
+          direction: dir,
+          textAlign: dir === 'rtl' ? 'right' : 'left',
+        }
+      });
     } finally {
       setIsLoading(false);
     }
@@ -73,8 +135,8 @@ export default function Login() {
             <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ display: 'grid', gap: 1.75 }}>
               <TextField
                 {...register('email', {
-                  required: t('email_label') + ' ' + (dir === 'rtl' ? 'مطلوب' : 'required'),
-                  pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: t('email_label') + ' ' + (dir === 'rtl' ? 'غير صالح' : 'invalid') },
+                  required: t('email_required'),
+                  pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: t('email_invalid') },
                 })}
                 error={!!errors.email}
                 helperText={errors.email?.message}
@@ -93,8 +155,8 @@ export default function Login() {
               />
               <TextField
                 {...register('password', { 
-                  required: t('password_label') + ' ' + (dir === 'rtl' ? 'مطلوبة' : 'required'), 
-                  minLength: { value: 6, message: dir === 'rtl' ? 'على الأقل 6 أحرف' : 'At least 6 characters' } 
+                  required: t('password_required'), 
+                  minLength: { value: 6, message: t('password_min_length') } 
                 })}
                 error={!!errors.password}
                 helperText={errors.password?.message}

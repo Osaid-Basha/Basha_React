@@ -1,28 +1,31 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import axios from 'axios';
+import AxiosUserInstanse from '../../api/AxiosUserInstanse';
+import {useQuery} from "@tanstack/react-query"
+import { useLanguage } from '../../i18n/LanguageContext.jsx'
 
-// Optional prop: brands = [{ id, name, logoUrl }]
 export default function BrandGallery() {
+  const { t, dir } = useLanguage();
 
-  const [brands, setBrands] = React.useState([]);
-  React.useEffect(() => {
     const fetchBrands = async () => {
-      const response = await axios.get('https://kashop1.runasp.net/api/Customer/Brands');
-      const data = response.data;
-      setBrands(data);
+      const response = await AxiosUserInstanse.get('/Brands');
+      return response.data;
     };
-    fetchBrands();
-  }, []);
-
+    const {data,isLoading,isError,error}= useQuery({
+      queryKey:['Brands'],
+      queryFn:fetchBrands,
+      staleTime:1000*60*5
+    })
+ 
+    
 
 
   return (
     <Box sx={{ width: 'min(1400px, 96%)', mx: 'auto', mt: { xs: 3, md: 4 } }}>
       <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', mb: 1 }}>
         <Typography sx={{ fontSize: { xs: 18, md: 22 }, fontWeight: 800, letterSpacing: '0.02em' }}>
-          الماركات المميزة
+          {t('featured_brands')}
         </Typography>
      
       </Box>
@@ -48,7 +51,7 @@ export default function BrandGallery() {
             gap: { xs: 1, sm: 1.25, md: 1.5 },
           }}
         >
-          {brands.map((b, idx) => (
+          {(data ?? []).map((b, idx) => (
             <Box
               key={b.id ?? idx}
               sx={{

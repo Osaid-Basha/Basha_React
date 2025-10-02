@@ -2,25 +2,29 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import axios from 'axios';
+import AxiosUserInstanse from '../../api/AxiosUserInstanse';
+import { useQuery } from '@tanstack/react-query';
+import { useLanguage } from '../../i18n/LanguageContext.jsx';
 
 
 export default function Categories() {
-  const [categories, setCategories] = React.useState([]);
-  React.useEffect(() => {
-    const fetchCategories = async () => {
-      const response = await axios.get('https://kashop1.runasp.net/api/Customer/Categories');
-      const data = response.data;
-      console.log(data);
-      setCategories(data);
-    };
-    fetchCategories();
-  }, []);
+  const { t, dir } = useLanguage();
+ 
+  const fetchCategories = async () => {
+    const response = await AxiosUserInstanse.get('/Categories');
+    return response.data;
+  };
+  const {data,isLoading,isError,error}= useQuery({
+    queryKey:['Categories'],
+    queryFn:fetchCategories,
+    staleTime:1000*60*5
+  })
 
   return (
     <Box sx={{ width: 'min(1400px, 96%)', mx: 'auto', mt: { xs: 3, md: 4 } }}>
       <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', mb: 1 }}>
         <Typography sx={{ fontSize: { xs: 18, md: 22 }, fontWeight: 800, letterSpacing: '0.02em' }}>
-          الأقسام
+          {t('categories')}
         </Typography>
       </Box>
 
@@ -46,7 +50,7 @@ export default function Categories() {
             gap: { xs: 1, sm: 1.25, md: 1.5 },
           }}
         >
-          {categories.map((c) => (
+          {(data ?? []).map((c) => (
             <Box
               key={c.id}
               sx={{

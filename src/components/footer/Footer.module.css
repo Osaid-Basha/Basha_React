@@ -39,6 +39,7 @@
 .socials { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
 .socialBtn { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: rgba(15,23,42,0.06); color: #0f172a; text-decoration: none; font-weight: 600; transition: background 160ms ease, transform 140ms ease; }
 .socialBtn:hover { background: rgba(15,23,42,0.12); transform: translateY(-1px); }
+.socialBtn:hover { background: rgba(15,23,42,0.12); transform: translateY(-1px); }
 
 .newsForm { display: flex; gap: 8px; margin-top: 10px; }
 .input { flex: 1; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(15, 23, 42, 0.15); background: #fff; }

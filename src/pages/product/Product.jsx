@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -20,12 +20,14 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 
 import ProductList from '../../components/product/ProductList';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { toast } from 'react-toastify';
+import AxiosUserInstanse from '../../api/AxiosUserInstanse.jsx';
 
 export default function Product() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { t, dir } = useLanguage();
   const [product, setProduct] = React.useState(null);
-  const [isLoading, setIsLoading] = React.useState(true);
   const [activeImage, setActiveImage] = React.useState('');
   const [quantity, setQuantity] = React.useState(1);
   const [isInCart, setIsInCart] = React.useState(false);
@@ -33,30 +35,25 @@ export default function Product() {
   const renderStars = (rateValue) => {
     const full = Math.round(Number(rateValue || 0));
     return Array.from({ length: 5 }).map((_, i) => (
-      i < full ? <StarIcon key={i} sx={{ fontSize: 18, color: '#f59e0b' }} /> : <StarBorderIcon key={i} sx={{ fontSize: 18, color: '#f59e0b' }} />
+      i < full ? <StarIcon key={i} sx={{ fontSize: 18, color: 'warning.main' }} /> : <StarBorderIcon key={i} sx={{ fontSize: 18, color: 'warning.main' }} />
     ));
   };
 
-    React.useEffect(() => {
-    let isMounted = true;
     const fetchProduct = async () => {
-      try {
-        const response = await axios.get(`https://kashop1.runasp.net/api/Customer/Products/${id}`);
-        const data = response.data;
-        if (isMounted) {
-          setProduct(data);
-          setActiveImage(data.mainImageUrl || '');
-        }
-      } catch (error) {
-        console.error('Error fetching product:', error);
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
+      const response = await AxiosUserInstanse.get(`/Products/${id}`);
+      return response.data;
     };
-    
-    fetchProduct();
-    return () => { isMounted = false; };
-  }, [id]);
+    const { data, isLoading, isError, error } = useQuery({
+      queryKey: ['Product', id],
+      queryFn: fetchProduct,
+      staleTime: 1000 * 60 * 5,
+    });
+    React.useEffect(() => {
+      if (data) {
+        setProduct(data);
+        setActiveImage(data.mainImageUrl || '');
+      }
+    }, [data]);
 
   if (isLoading) {
     return (
@@ -84,37 +81,70 @@ export default function Product() {
     }
   };
 
-  const handleAddToCart = () => {
-    const cartItem = {
-      id: product.id,
-      name: product.name,
-      price: finalPrice,
-      quantity: quantity,
-      image: product.mainImageUrl,
-      maxQuantity: product.quantity
-    };
-    
-    // Get existing cart from localStorage
-    const existingCart = JSON.parse(localStorage.getItem('cart') || '[]');
-    const existingItemIndex = existingCart.findIndex(item => item.id === product.id);
-    
-    if (existingItemIndex >= 0) {
-      // Update existing item
-      existingCart[existingItemIndex].quantity += quantity;
-    } else {
-      // Add new item
-      existingCart.push(cartItem);
+  const handleAddToCart = async () => {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      toast.error(t('login_required_for_cart'), {
+        position: "top-right",
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        style: { direction: 'rtl', textAlign: 'right' }
+      });
+      navigate('/login');
+      return;
     }
-    
-    localStorage.setItem('cart', JSON.stringify(existingCart));
-    setIsInCart(true);
-    
-    // Show success message
-    alert(`${t('added')} ${quantity} ${t('pieces')} ${t('add_to_cart')}!`);
+    try {
+      await AxiosUserInstanse.post('/Carts', { productId: product.id });
+      for (let i = 1; i < quantity; i += 1) {
+        await AxiosUserInstanse.post(`/Carts/increment/${product.id}`);
+      }
+      setIsInCart(true);
+      toast.success(
+        t('product_added_to_cart_success', { quantity, productName: product.name, pieces: quantity === 1 ? t('piece') : t('pieces') }),
+        {
+          position: "top-right",
+          autoClose: 4000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          style: { direction: 'rtl', textAlign: 'right', fontSize: '14px', fontWeight: '500' }
+        }
+      );
+    } catch (error) {
+      console.error('Error adding to cart:', error?.response?.data || error?.message);
+      toast.error(t('product_add_failed'));
+    }
   };
 
   const handleToggleFavorite = () => {
-    setIsFavorite(!isFavorite);
+    const newFavoriteState = !isFavorite;
+    setIsFavorite(newFavoriteState);
+    
+    // Show favorite message
+    toast.success(
+      newFavoriteState 
+        ? `تم إضافة "${product.name}" إلى المفضلة! ❤️`
+        : `تم إزالة "${product.name}" من المفضلة! 💔`,
+      {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        style: {
+          direction: 'rtl',
+          textAlign: 'right',
+          fontSize: '14px',
+          fontWeight: '500'
+        }
+      }
+    );
+    
     // You can also save to localStorage or API here
   };
 
@@ -157,9 +187,9 @@ export default function Product() {
           <Box sx={{ textAlign: 'right', flex: 1 }}>
             <Typography sx={{ fontSize: { xs: 20, md: 28 }, fontWeight: 900, mb: 1 }}>{product.name}</Typography>
             <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-              {product.categoryName && <Chip label={product.categoryName} size="small" sx={{ background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.25)', color: '#4f46e5', fontWeight: 700 }} />}
-              {product.brandName && <Chip label={product.brandName} size="small" sx={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)', color: '#16a34a', fontWeight: 700 }} />}
-              {hasDiscount && <Chip label={`${t('discount')} ${Number(product.discount)}%`} size="small" sx={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)', color: '#ef4444', fontWeight: 800 }} />}
+              {product.categoryName && <Chip label={product.categoryName} size="small" color="primary" variant="outlined" sx={{ fontWeight: 700 }} />}
+              {product.brandName && <Chip label={product.brandName} size="small" color="success" variant="outlined" sx={{ fontWeight: 700 }} />}
+              {hasDiscount && <Chip label={`${t('discount')} ${Number(product.discount)}%`} size="small" color="error" variant="outlined" sx={{ fontWeight: 800 }} />}
             </Box>
           </Box>
           <IconButton onClick={async () => {
@@ -179,35 +209,35 @@ export default function Product() {
         {/* Delivery & Info Section */}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, gap: 1.5, mt: 1.5 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1, background: 'rgba(255,255,255,0.6)', borderRadius: 1.5, border: '1px solid rgba(99,102,241,0.1)' }}>
-            <LocalShippingIcon sx={{ color: '#4f46e5', fontSize: 20 }} />
+            <LocalShippingIcon color="primary" sx={{ fontSize: 20 }} />
             <Box>
-              <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#4f46e5' }}>{t('fast_delivery')}</Typography>
+              <Typography sx={{ fontSize: 12, fontWeight: 700, color: 'primary.main' }}>{t('fast_delivery')}</Typography>
               <Typography sx={{ fontSize: 11, color: 'rgba(15,23,42,0.7)' }}>{t('fast_delivery_time')}</Typography>
             </Box>
           </Box>
           
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1, background: 'rgba(255,255,255,0.6)', borderRadius: 1.5, border: '1px solid rgba(34,197,94,0.1)' }}>
-            <ReplayIcon sx={{ color: '#16a34a', fontSize: 20 }} />
+            <ReplayIcon color="success" sx={{ fontSize: 20 }} />
             <Box>
-              <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#16a34a' }}>{t('free_returns')}</Typography>
+              <Typography sx={{ fontSize: 12, fontWeight: 700, color: 'success.main' }}>{t('free_returns')}</Typography>
               <Typography sx={{ fontSize: 11, color: 'rgba(15,23,42,0.7)' }}>{t('free_returns_time')}</Typography>
             </Box>
           </Box>
           
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1, background: 'rgba(255,255,255,0.6)', borderRadius: 1.5, border: '1px solid rgba(245,158,11,0.1)' }}>
-            <StarIcon sx={{ color: '#f59e0b', fontSize: 20 }} />
+            <StarIcon color="warning" sx={{ fontSize: 20 }} />
             <Box>
-              <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#f59e0b' }}>{t('product_rating')}</Typography>
+              <Typography sx={{ fontSize: 12, fontWeight: 700, color: 'warning.main' }}>{t('product_rating')}</Typography>
               <Typography sx={{ fontSize: 11, color: 'rgba(15,23,42,0.7)' }}>{product.rate}/5 {t('stars')}</Typography>
             </Box>
           </Box>
           
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1, background: 'rgba(255,255,255,0.6)', borderRadius: 1.5, border: '1px solid rgba(99,102,241,0.1)' }}>
             <Box sx={{ width: 20, height: 20, borderRadius: '50%', background: '#4f46e5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Typography sx={{ fontSize: 10, color: '#fff', fontWeight: 700 }}>✓</Typography>
+              <Typography sx={{ fontSize: 10, color: 'common.white', fontWeight: 700 }}>✓</Typography>
             </Box>
             <Box>
-              <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#4f46e5' }}>{t('available_now')}</Typography>
+              <Typography sx={{ fontSize: 12, fontWeight: 700, color: 'primary.main' }}>{t('available_now')}</Typography>
               <Typography sx={{ fontSize: 11, color: 'rgba(15,23,42,0.7)' }}>{product.quantity} {t('pieces')}</Typography>
             </Box>
           </Box>
@@ -258,10 +288,11 @@ export default function Product() {
               {t('why_choose_product')}
             </Typography>
             <Typography sx={{ fontSize: 14, color: 'rgba(15,23,42,0.8)', lineHeight: 1.7, textAlign: dir === 'rtl' ? 'right' : 'left' }}>
-              {dir === 'rtl' 
-                ? `منتج عالي الجودة من ${product.brandName || 'ماركة موثوقة'} في قسم ${product.categoryName || 'المتجر'}. يتميز بتصميم عصري وجودة ممتازة مع ضمان الرضا التام.${hasDiscount ? ` احصل عليه الآن بخصم ${Number(product.discount)}% ووفر المال!` : ''}`
-                : `High quality product from ${product.brandName || 'trusted brand'} in ${product.categoryName || 'store'} category. Features modern design and excellent quality with complete satisfaction guarantee.${hasDiscount ? ` Get it now with ${Number(product.discount)}% discount and save money!` : ''}`
-              }
+              {t('why_choose_desc', { 
+                brand: product.brandName || t('trusted_brand'), 
+                category: product.categoryName || t('store_category'),
+                discount_text: hasDiscount ? t('discount_offer', { discount: Number(product.discount) }) : ''
+              })}
             </Typography>
           </Box>
 
@@ -370,7 +401,26 @@ export default function Product() {
             
             <Button 
               variant="outlined" 
-              onClick={() => window.location.href = '/cart'}
+              onClick={() => {
+                const token = localStorage.getItem('auth_token');
+                if (!token) {
+                  toast.error(t('login_required_for_cart'), {
+                    position: "top-right",
+                    autoClose: 4000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    style: {
+                      direction: 'rtl',
+                      textAlign: 'right'
+                    }
+                  });
+                  navigate('/login');
+                } else {
+                  navigate('/cart');
+                }
+              }}
               sx={{ 
                 textTransform: 'none', 
                 borderRadius: 2, 

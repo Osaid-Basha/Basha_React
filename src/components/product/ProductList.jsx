@@ -9,63 +9,56 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
-import axios from 'axios';
 import { useLanguage } from '../../i18n/LanguageContext.jsx';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import AxiosUserInstanse from '../../api/AxiosUserInstanse.jsx';
 
 
-export default function ProductList({ title = 'منتجات مختارة', layout = 'grid', viewAllHref, query = '', minPrice, maxPrice, minRate, sort, hasDiscountOnly = false }) {
+export default function ProductList({ title, layout = 'grid', viewAllHref, query = '', minPrice, maxPrice, minRate, sort, hasDiscountOnly = false }) {
   const { t } = useLanguage();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [favoriteIds, setFavoriteIds] = React.useState(new Set());
   const [addedIds, setAddedIds] = React.useState(new Set());
  
   
   const token = localStorage.getItem('auth_token');
   const addToCart = async (id) => {
+    if (!token) {
+      toast.error(t('login_required_for_cart'));
+      navigate('/login');
+      return;
+    }
     try {
-      const res = await axios.post(
-        'https://kashop1.runasp.net/api/Customer/Carts',
-        { productId: id },
-        { headers: { Authorization: `Bearer ${token}` }  }
-      );
-      
+      await AxiosUserInstanse.post('/Carts', { productId: id });
       setAddedIds(prev => new Set([...prev, id]));
+      // Invalidate cart query to update navbar counter
+      queryClient.invalidateQueries(['Cart']);
       toast.success(t('product_added_success'));
-    } catch (error) {
+    } catch (error) { 
       console.error('Error adding to cart:', error?.response?.data || error?.message);
       toast.error(t('product_add_failed'));
     }
   };
   
+  
  
 
-  const [products, setProducts] = React.useState([]);
-  const [isLoading, setIsLoading] = React.useState(true);
-
-  React.useEffect(() => {
-    let isMounted = true;
-    const fetchProducts = async () => {
-      try {
-        const res = await axios.get('https://kashop1.runasp.net/api/Customer/Products');
-        const data = await res.data;
-        console.log(data);
-        
-       
-          setProducts(data);
-        
-      } catch (e) {
-        console.log(e);
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    };
-    fetchProducts();
-    return () => { isMounted = false; };
-  }, []);
+  const fetchProducts = async () => {
+    const response = await AxiosUserInstanse.get('/Products');
+    return response.data;
+  };
+  const { data: products = [], isLoading, isError, error } = useQuery({
+    queryKey: ['Products'],
+    queryFn: fetchProducts,
+    staleTime: 1000 * 60 * 5,
+  });
 
   const isCarousel = layout === 'carousel';
   const normalizedQuery = String(query || '').trim().toLowerCase();
-  const filtered = products
+  const filtered = (products ?? [])
     .filter((p) => !normalizedQuery || String(p.name || '').toLowerCase().includes(normalizedQuery))
     .filter((p) => (minPrice == null || Number(p.price) >= Number(minPrice)))
     .filter((p) => (maxPrice == null || Number(p.price) <= Number(maxPrice)))
@@ -98,10 +91,10 @@ export default function ProductList({ title = 'منتجات مختارة', layou
     <Box sx={{ width: 'min(1400px, 96%)', mx: 'auto', mt: { xs: 3, md: 4 } }}>
       <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', mb: 1 }}>
         <Typography sx={{ fontSize: { xs: 18, md: 22 }, fontWeight: 800, letterSpacing: '0.02em' }}>
-          {title}
+          {title || t('featured_products')}
         </Typography>
         {viewAllHref && (
-          <Button size="small" href={viewAllHref} sx={{ textTransform: 'none', color: '#4f46e5' }}>عرض المزيد</Button>
+          <Button size="small" href={viewAllHref} sx={{ textTransform: 'none', color: '#4f46e5' }}>{t('view_more')}</Button>
         )}
       </Box>
 
@@ -131,8 +124,8 @@ export default function ProductList({ title = 'منتجات مختارة', layou
         )}
         {isCarousel && (
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mb: 0.5 }}>
-            <Button variant="outlined" size="small" onClick={() => scrollByAmount(-320)} sx={{ textTransform: 'none' }}>السابق</Button>
-            <Button variant="outlined" size="small" onClick={() => scrollByAmount(320)} sx={{ textTransform: 'none' }}>التالي</Button>
+            <Button variant="outlined" size="small" onClick={() => scrollByAmount(-320)} sx={{ textTransform: 'none' }}>{t('previous')}</Button>
+            <Button variant="outlined" size="small" onClick={() => scrollByAmount(320)} sx={{ textTransform: 'none' }}>{t('next')}</Button>
           </Box>
         )}
         {!isLoading && (
