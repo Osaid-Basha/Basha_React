@@ -91,6 +91,25 @@ const dictionaries = {
     cart_cleared_success: 'تم مسح السلة بنجاح',
     cart_clear_failed: 'فشل في مسح السلة',
 
+    // Reviews
+    reviews_and_ratings: 'التقييمات والمراجعات',
+    write_review: 'اكتب تقييمك',
+    your_rating: 'تقييمك',
+    your_comment: 'تعليقك',
+    write_your_comment_here: 'اكتب تعليقك هنا...',
+    submit_review: 'إرسال التقييم',
+    submitting: 'جاري الإرسال...',
+    please_select_rating: 'يرجى اختيار تقييم',
+    please_write_comment: 'يرجى كتابة تعليق',
+    login_required_for_review: 'يجب تسجيل الدخول لإضافة تقييم',
+    review_submitted_success: 'تم إرسال التقييم بنجاح',
+    review_submit_failed: 'فشل في إرسال التقييم',
+    error_loading_reviews: 'خطأ في تحميل التقييمات',
+    no_reviews_yet: 'لا توجد تقييمات بعد',
+    be_first_to_review: 'كن أول من يقيم هذا المنتج',
+    reviews: 'تقييم',
+    anonymous: 'مجهول',
+
     // Checkout
     checkout: 'الدفع',
     secure_checkout: 'دفع آمن',
@@ -482,6 +501,25 @@ const dictionaries = {
     item_remove_failed: 'Failed to remove item from cart',
     cart_cleared_success: 'Cart cleared successfully',
     cart_clear_failed: 'Failed to clear cart',
+
+    // Reviews
+    reviews_and_ratings: 'Reviews & Ratings',
+    write_review: 'Write Your Review',
+    your_rating: 'Your Rating',
+    your_comment: 'Your Comment',
+    write_your_comment_here: 'Write your comment here...',
+    submit_review: 'Submit Review',
+    submitting: 'Submitting...',
+    please_select_rating: 'Please select a rating',
+    please_write_comment: 'Please write a comment',
+    login_required_for_review: 'Login required to add review',
+    review_submitted_success: 'Review submitted successfully',
+    review_submit_failed: 'Failed to submit review',
+    error_loading_reviews: 'Error loading reviews',
+    no_reviews_yet: 'No reviews yet',
+    be_first_to_review: 'Be the first to review this product',
+    reviews: 'reviews',
+    anonymous: 'Anonymous',
 
     // Checkout
     checkout: 'Checkout',

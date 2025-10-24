@@ -17,8 +17,12 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 
 import ProductList from '../../components/product/ProductList';
+import ReviewForm from '../../components/product/ReviewForm';
+import ReviewList from '../../components/product/ReviewList';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { toast } from 'react-toastify';
 import AxiosUserInstanse from '../../api/AxiosUserInstanse.jsx';
@@ -458,6 +462,28 @@ export default function Product() {
           </Box>
         </Box>
       </Box>
+
+      {/* Reviews Section */}
+      <Box sx={{ mt: { xs: 4, md: 6 } }}>
+        <Typography sx={{ 
+          fontSize: { xs: 20, md: 24 }, 
+          fontWeight: 900, 
+          color: '#0f172a', 
+          mb: 3,
+          textAlign: dir === 'rtl' ? 'right' : 'left'
+        }}>
+          {t('reviews_and_ratings') || 'التقييمات والمراجعات'}
+        </Typography>
+        
+        <Box sx={{ display: 'grid', gap: 3 }}>
+          <ReviewList productId={id} />
+          <ReviewForm productId={id} onReviewSubmitted={() => {
+            // Invalidate reviews query to refresh the list
+            window.location.reload();
+          }} />
+        </Box>
+      </Box>
+
       <Box sx={{ mt: { xs: 3, md: 4 } }}>
         <ProductList title={t('similar_products')} layout="carousel" query={(product.brandName || product.categoryName || '')} />
       </Box>

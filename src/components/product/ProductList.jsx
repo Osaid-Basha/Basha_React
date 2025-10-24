@@ -48,7 +48,7 @@ export default function ProductList({ title, layout = 'grid', viewAllHref, query
 
   const fetchProducts = async () => {
     const response = await AxiosUserInstanse.get('/Products');
-    return response.data;
+    return response.data.data || []; // Extract from nested structure
   };
   const { data: products = [], isLoading, isError, error } = useQuery({
     queryKey: ['Products'],
@@ -120,6 +120,31 @@ export default function ProductList({ title, layout = 'grid', viewAllHref, query
                 </Box>
               </Box>
             ))}
+          </Box>
+        )}
+        {isError && (
+          <Box sx={{ textAlign: 'center', py: 6, color: 'rgba(15,23,42,0.7)' }}>
+            <Typography sx={{ fontWeight: 800, mb: 2, color: '#ef4444' }}>
+              {t('error_loading_products') || 'خطأ في تحميل المنتجات'}
+            </Typography>
+            <Typography sx={{ fontSize: 14, mb: 3, color: 'rgba(15,23,42,0.6)' }}>
+              {t('error_loading_products_desc') || 'حدث خطأ أثناء تحميل المنتجات. يرجى المحاولة مرة أخرى.'}
+            </Typography>
+            <Button 
+              variant="contained" 
+              onClick={() => window.location.reload()} 
+              sx={{ 
+                textTransform: 'none', 
+                borderRadius: 2, 
+                px: 3,
+                background: 'linear-gradient(90deg, #4f46e5, #16a34a)',
+                '&:hover': {
+                  background: 'linear-gradient(90deg, #4338ca, #15803d)'
+                }
+              }}
+            >
+              {t('retry') || 'إعادة المحاولة'}
+            </Button>
           </Box>
         )}
         {isCarousel && (
